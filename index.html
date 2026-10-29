@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#173b35">
-<meta name="app-version" content="8">
+<meta name="app-version" content="9">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="My Points">
@@ -17,10 +17,10 @@
 </style>
 </head>
 <body>
-<header><h1>My Points Tracker</h1><p>Personal food log · weight history · works offline after saving</p></header>
+<header><h1>My Points Tracker</h1><p>Personal food log · weight history · offline-ready</p></header>
 <main class="wrap">
 <div class="tabs" role="tablist">
-<button class="active" data-tab="today">Today</button><button data-tab="foods">Saved foods</button><button data-tab="weight">Weight</button><button data-tab="settings">Settings & backup</button>
+<button class="active" data-tab="today">Today</button><button data-tab="history">History</button><button data-tab="foods">Saved foods</button><button data-tab="weight">Weight</button><button data-tab="settings">Settings & backup</button>
 </div>
 <section id="today" class="panel active">
 <div class="card">
@@ -55,6 +55,17 @@
 <p class="muted">Estimate classic Points from nutrition information. Results are estimates; confirm that this formula matches the exact original program you used.</p>
 <form id="calcForm"><div class="formgrid"><div class="full"><label for="calcName">Food name (optional)</label><input id="calcName" placeholder="e.g. Granola bar"></div><div><label for="calories">Calories</label><input id="calories" type="number" min="0" required placeholder="120"></div><div><label for="fat">Fat (grams)</label><input id="fat" type="number" min="0" step=".1" required placeholder="4"></div><div><label for="fiber">Dietary fiber (grams)</label><input id="fiber" type="number" min="0" step=".1" required placeholder="3"></div><div><label for="servings">Servings eaten</label><input id="servings" type="number" min=".1" step=".1" value="1" required></div></div><div class="row between" style="margin-top:13px"><div><div class="muted">Estimated points</div><div class="big" id="calcResult">—</div></div><button class="btn" type="submit">Use points in log</button></div></form>
 </div>
+</section>
+<section id="history" class="panel">
+<div class="card">
+<h2>Food history</h2>
+<p class="muted">Choose a date to review foods you logged on that day. Tap “Add to today” to copy a food entry to today without changing the original entry.</p>
+<label for="historyDate">Choose day</label>
+<div class="row"><input id="historyDate" type="date" class="grow"><button class="btn secondary" id="historyToday" type="button">Today</button></div>
+<div class="stats" style="margin-top:12px"><div class="stat"><small>Food points that day</small><strong id="historyTotal">0</strong></div><div class="stat"><small>Entries</small><strong id="historyCount">0</strong></div></div>
+<div id="historyList" style="margin-top:10px"></div>
+</div>
+<div class="card"><h2>Recent days</h2><p class="muted">Pick a day below to see its food log.</p><div id="recentDays"></div></div>
 </section>
 <section id="foods" class="panel">
 <div class="card"><h2>Built-in food library</h2><p class="muted">Search common foods and portions. Point values are estimates calculated from typical nutrition data using the approximate classic-Points formula in this app; brands and recipes vary. You can log a result or save it to your personal list.</p>
@@ -187,6 +198,16 @@ function weeklyUsage(){const start=mondayOfWeek(today());let used=0;for(let i=0;
 // Transparent custom estimate: 0.5 points per 15 min light, 1 point per 15 min moderate, 1.5 points per 15 min vigorous; rounded to nearest half point.
 function estimateActivityPoints(minutes,effort){const rate={light:0.5,moderate:1,vigorous:1.5}[effort]||1;return Math.max(0,Math.round((n(minutes)/15*rate)*2)/2)}
 function updateActivityEstimate(){const mins=n($('activityMinutes').value),effort=$('activityEffort').value,pts=mins>0?estimateActivityPoints(mins,effort):0;$('activityEstimate').textContent=fmt(pts);$('activityRate').textContent=(mins||0)+' min at '+effort+' effort · '+({light:'0.5',moderate:'1',vigorous:'1.5'}[effort])+' point(s) per 15 min';}
+function renderHistory(){
+ const dateInput=$('historyDate'); if(!dateInput.value) dateInput.value=today();
+ const date=dateInput.value||today();
+ const logs=data.logs.filter(x=>x.date===date).slice().reverse();
+ $('historyTotal').textContent=fmt(logs.reduce((sum,x)=>sum+n(x.points),0));
+ $('historyCount').textContent=String(logs.length);
+ $('historyList').innerHTML=logs.length?logs.map(x=>`<div class="logrow"><div class="grow"><strong>${esc(x.name)}</strong><div class="muted">${esc(x.meal||'Other')} · ${fmt(x.points)} pts · ${esc(x.date)}</div></div><button class="tinybtn" data-copy-to-today="${esc(x.id)}">Add to today</button></div>`).join(''):'<div class="empty">No food entries for this date.</div>';
+ const dates=[...new Set(data.logs.map(x=>x.date).filter(Boolean))].sort((a,b)=>b.localeCompare(a)).filter(d=>d!==date).slice(0,14);
+ $('recentDays').innerHTML=dates.length?dates.map(d=>{const day=data.logs.filter(x=>x.date===d);const sum=day.reduce((n,x)=>n+Number(x.points||0),0);return `<div class="logrow"><div class="grow"><strong>${esc(d)}</strong><div class="muted">${day.length} food entr${day.length===1?'y':'ies'} · ${fmt(sum)} pts</div></div><button class="tinybtn" data-history-date="${esc(d)}">View day</button></div>`}).join(''):'<div class="empty">Your logged days will appear here.</div>';
+}
 function draw(){
 $('todayDate').textContent=new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
 $('weightDate').value=$('weightDate').value||today();
@@ -204,6 +225,7 @@ $('foodSelect').innerHTML='<option value="">Choose a saved food…</option>'+dat
 const acts=activitiesForDay(today()),actTotal=acts.reduce((sum,a)=>sum+n(a.points),0);$('activityToday').textContent=fmt(actTotal);$('availableToday').textContent=fmt(allowance+actTotal);$('activityList').innerHTML=acts.length?acts.slice().reverse().map(a=>`<div class="logrow"><div class="grow"><strong>${esc(a.type)}</strong><div class="muted">${esc(a.minutes)} min · ${esc(a.effort)} effort · ${esc(a.date)}</div></div><span class="points">+${fmt(a.points)} pts</span><button class="tinybtn" data-delete-activity="${esc(a.id)}" aria-label="Delete ${esc(a.type)}">×</button></div>`).join(''):'<div class="empty">No activity logged today yet.</div>';
 $('savedList').innerHTML=data.foods.length?data.foods.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(f=>`<div class="foodrow"><div class="grow"><strong>${esc(f.name)}</strong><div class="muted">${esc(f.serving||'Serving not specified')}</div></div><span class="points">${fmt(f.points)} pts</span><button class="tinybtn" data-use-food="${esc(f.id)}">Log</button><button class="tinybtn" data-delete-food="${esc(f.id)}">×</button></div>`).join(''):'<div class="empty">No saved foods yet.</div>';
 drawLibrary();
+renderHistory();
 $('allowance').value=data.settings.allowance||'';$('startWeight').value=data.settings.startWeight||'';$('goalWeight').value=data.settings.goalWeight||'';
 const ws=data.weights.slice().sort((a,b)=>a.date.localeCompare(b.date));const latest=ws[ws.length-1];const start=data.settings.startWeight!==''?n(data.settings.startWeight):(ws[0]?n(ws[0].weight):0);
 $('latestWeight').textContent=latest?fmt(latest.weight)+' lb':'—';const change=latest&&start? n(latest.weight)-start:null;$('weightChange').textContent=change===null?'—':(change>0?'+':'')+fmt(change)+' lb';
@@ -212,7 +234,8 @@ drawChart(ws);
 }
 function drawChart(ws){const c=$('weightChart'),ctx=c.getContext('2d'),rect=c.getBoundingClientRect(),dpr=window.devicePixelRatio||1;c.width=Math.max(1,rect.width*dpr);c.height=Math.max(1,rect.height*dpr);ctx.scale(dpr,dpr);const w=rect.width,h=rect.height;ctx.clearRect(0,0,w,h);if(!ws.length){ctx.fillStyle='#667570';ctx.font='14px sans-serif';ctx.textAlign='center';ctx.fillText('Your weight chart will appear here',w/2,h/2);return}const vals=ws.map(x=>n(x.weight)),min=Math.min(...vals)-2,max=Math.max(...vals)+2, left=38,right=12,top=18,bottom=30, pw=w-left-right,ph=h-top-bottom;ctx.font='11px sans-serif';ctx.fillStyle='#667570';ctx.strokeStyle='#e0e7e2';ctx.lineWidth=1;for(let i=0;i<4;i++){const y=top+ph*i/3;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(w-right,y);ctx.stroke();ctx.fillText(fmt(max-(max-min)*i/3),2,y+4)}const pts=ws.map((p,i)=>({x:left+(ws.length===1?pw/2:pw*i/(ws.length-1)),y:top+ph*(max-n(p.weight))/(max-min),p}));ctx.strokeStyle='#398565';ctx.lineWidth=2.5;ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();pts.forEach((p,i)=>{ctx.fillStyle='#173b35';ctx.beginPath();ctx.arc(p.x,p.y,3.5,0,Math.PI*2);ctx.fill();if(i===0||i===pts.length-1||pts.length<=5){ctx.fillStyle='#667570';ctx.textAlign=i===0?'left':i===pts.length-1?'right':'center';ctx.fillText(p.p.date.slice(5),p.x, h-8)}})}
 function addLog(name,points,meal){data.logs.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random()),date:today(),name,points:n(points),meal:meal||'Other'});save();draw()}
-$('tabs');document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab));if(b.dataset.tab==='weight')draw()}));
+$('tabs');document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab));if(b.dataset.tab==='weight')draw();if(b.dataset.tab==='history')renderHistory()}));
+$('historyDate').addEventListener('change',renderHistory);$('historyToday').addEventListener('click',()=>{$('historyDate').value=today();renderHistory()});
 $('logForm').addEventListener('submit',e=>{e.preventDefault();addLog($('foodName').value.trim(),$('foodPoints').value,$('meal').value);$('foodName').value='';$('foodPoints').value='';});
 function logSaved(id){const f=data.foods.find(x=>x.id===id);if(f)addLog(f.name,f.points,'Other')}
 $('addSaved').addEventListener('click',()=>{if(!$('foodSelect').value){alert('Choose a saved food first.');return}const f=data.foods.find(x=>x.id===$('foodSelect').value);if(f)openPortion({kind:'saved',name:f.name,points:n(f.points),serving:f.serving||'1 serving',conversions:f.conversions||{}})});
@@ -225,7 +248,7 @@ $('weightForm').addEventListener('submit',e=>{e.preventDefault();const date=$('w
 $('settingsForm').addEventListener('submit',e=>{e.preventDefault();data.settings.allowance=n($('allowance').value);data.settings.startWeight=$('startWeight').value? n($('startWeight').value):'';data.settings.goalWeight=$('goalWeight').value? n($('goalWeight').value):'';save();draw();alert('Settings saved on this device.')});
 $('calcForm').addEventListener('input',()=>{const cal=n($('calories').value),fat=n($('fat').value),fiber=Math.min(4,n($('fiber').value)),serv=n($('servings').value)||1;const valid=$('calories').value!==''&&$('fat').value!==''&&$('fiber').value!=='';const pts=valid?Math.max(0,Math.round((cal/50+fat/12-Math.min(4,fiber)/5)*serv*2)/2):null;$('calcResult').textContent=pts===null?'—':fmt(pts);$('calcForm').dataset.points=pts===null?'':String(pts)});
 $('calcForm').addEventListener('submit',e=>{e.preventDefault();const points=$('calcForm').dataset.points;if(points===''){alert('Enter calories, fat, and fiber first.');return}const name=$('calcName').value.trim()||'Calculated food';$('foodName').value=name;$('foodPoints').value=points;$('meal').value='Snack';document.querySelector('[data-tab="today"]').click();});
-document.addEventListener('click',e=>{const t=e.target;if(t.dataset.deleteLog){data.logs=data.logs.filter(x=>x.id!==t.dataset.deleteLog);save();draw()}if(t.dataset.deleteFood){if(confirm('Delete this saved food? Existing food logs will remain.')){data.foods=data.foods.filter(x=>x.id!==t.dataset.deleteFood);save();draw()}}if(t.dataset.useFood){const f=data.foods.find(x=>x.id===t.dataset.useFood);if(f)openPortion({kind:'saved',name:f.name,points:n(f.points),serving:f.serving||'1 serving',conversions:f.conversions||{}})}if(t.dataset.libraryLog!==undefined){const f=LIBRARY[Number(t.dataset.libraryLog)];if(f)openPortion({kind:'library',name:f[0],serving:f[1],points:classicPoints(f[2],f[3],f[4])})}if(t.dataset.librarySave!==undefined){const f=LIBRARY[Number(t.dataset.librarySave)];if(f){const name=f[0],points=classicPoints(f[2],f[3],f[4]);const existing=data.foods.find(x=>x.name.toLowerCase()===name.toLowerCase());if(existing){if(confirm(name+' is already in your saved foods. Update its points and serving?')){existing.points=points;existing.serving=f[1]}}else data.foods.push({id:String(Date.now()+Math.random()),name,points,serving:f[1]});save();draw();}}if(t.dataset.deleteWeight){data.weights=data.weights.filter(x=>x.id!==t.dataset.deleteWeight);save();draw()}if(t.dataset.deleteActivity){data.activities=(data.activities||[]).filter(x=>x.id!==t.dataset.deleteActivity);save();draw()}});
+document.addEventListener('click',e=>{const t=e.target;if(t.dataset.copyToToday){const original=data.logs.find(x=>x.id===t.dataset.copyToToday);if(original){data.logs.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random()),date:today(),name:original.name,points:n(original.points),meal:original.meal||'Other',copiedFromDate:original.date});save();draw();alert('Added to today. The original past-day entry is unchanged.')}}if(t.dataset.historyDate){$('historyDate').value=t.dataset.historyDate;renderHistory()}if(t.dataset.deleteLog){data.logs=data.logs.filter(x=>x.id!==t.dataset.deleteLog);save();draw()}if(t.dataset.deleteFood){if(confirm('Delete this saved food? Existing food logs will remain.')){data.foods=data.foods.filter(x=>x.id!==t.dataset.deleteFood);save();draw()}}if(t.dataset.useFood){const f=data.foods.find(x=>x.id===t.dataset.useFood);if(f)openPortion({kind:'saved',name:f.name,points:n(f.points),serving:f.serving||'1 serving',conversions:f.conversions||{}})}if(t.dataset.libraryLog!==undefined){const f=LIBRARY[Number(t.dataset.libraryLog)];if(f)openPortion({kind:'library',name:f[0],serving:f[1],points:classicPoints(f[2],f[3],f[4])})}if(t.dataset.librarySave!==undefined){const f=LIBRARY[Number(t.dataset.librarySave)];if(f){const name=f[0],points=classicPoints(f[2],f[3],f[4]);const existing=data.foods.find(x=>x.name.toLowerCase()===name.toLowerCase());if(existing){if(confirm(name+' is already in your saved foods. Update its points and serving?')){existing.points=points;existing.serving=f[1]}}else data.foods.push({id:String(Date.now()+Math.random()),name,points,serving:f[1]});save();draw();}}if(t.dataset.deleteWeight){data.weights=data.weights.filter(x=>x.id!==t.dataset.deleteWeight);save();draw()}if(t.dataset.deleteActivity){data.activities=(data.activities||[]).filter(x=>x.id!==t.dataset.deleteActivity);save();draw()}});
 $('exportJson').addEventListener('click',()=>download('my-points-tracker-backup-'+today()+'.json',JSON.stringify({...data,exportedAt:new Date().toISOString(),formatVersion:1},null,2),'application/json'));
 $('exportCsv').addEventListener('click',()=>{const content='FOODS\\r\\n'+csv([['name','points','serving'],...data.foods.map(f=>[f.name,f.points,f.serving])])+'\\r\\n\\r\\nFOOD LOG\\r\\n'+csv([['date','name','meal','points'],...data.logs.map(x=>[x.date,x.name,x.meal,x.points])])+'\\r\\n\\r\\nACTIVITY LOG\\r\\n'+csv([['date','activity','duration_minutes','effort','points'],...(data.activities||[]).map(x=>[x.date,x.type,x.minutes,x.effort,x.points])])+'\\r\\n\\r\\nWEIGHT HISTORY\\r\\n'+csv([['date','weight_lb','note'],...data.weights.map(x=>[x.date,x.weight,x.note])])+'\\r\\n\\r\\nSETTINGS\\r\\n'+csv([['daily_allowance','weekly_allowance','weekly_reset_day','start_weight_lb','goal_weight_lb'],[data.settings.allowance,WEEKLY_ALLOWANCE,'Monday',data.settings.startWeight,data.settings.goalWeight]]);download('my-points-tracker-'+today()+'.csv',content,'text/csv;charset=utf-8')});
 $('importFile').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{const parsed=JSON.parse(await file.text());if(!parsed.settings||!Array.isArray(parsed.foods)||!Array.isArray(parsed.logs)||!Array.isArray(parsed.weights))throw Error('This file does not look like a tracker backup.');if(!confirm('Replace all current tracker data with this backup?'))return;data={settings:parsed.settings,foods:parsed.foods,logs:parsed.logs,weights:parsed.weights,activities:Array.isArray(parsed.activities)?parsed.activities:[]};save();draw();alert('Backup restored.')}catch(err){alert('Could not restore backup: '+err.message)}e.target.value=''});
@@ -238,7 +261,7 @@ draw();
 // Offline support is available when this app is hosted over HTTPS (for example, GitHub Pages).
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js?v=8', { updateViaCache: 'none' }).catch(err => console.warn('Offline setup could not be enabled:', err));
+    navigator.serviceWorker.register('./sw.js?v=9', { updateViaCache: 'none' }).catch(err => console.warn('Offline setup could not be enabled:', err));
   });
 }
 </script>

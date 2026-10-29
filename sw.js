@@ -1,62 +1,46 @@
-// Points Tracker service worker — version 8
-// Offline-first: serve the cached app before trying the network.
-const CACHE_NAME = 'my-points-tracker-v8';
+// Points Tracker service worker — version 9
+// Offline-first navigation and static assets. Does not require network access to open the app.
+const CACHE_NAME = 'my-points-tracker-v9';
+const ROOT_URL = new URL('./', self.registration.scope).href;
 const APP_URL = new URL('./index.html', self.registration.scope).href;
 
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.add(new Request(APP_URL, { cache: 'reload' })))
-      .then(() => self.skipWaiting())
-  );
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    // Cache both the Pages root URL and canonical index URL so Home Screen launches work offline.
+    const rootResponse = await fetch(ROOT_URL, { cache: 'reload' });
+    if (rootResponse.ok) await cache.put(ROOT_URL, rootResponse.clone());
+    const appResponse = await fetch(APP_URL, { cache: 'reload' });
+    if (appResponse.ok) await cache.put(APP_URL, appResponse.clone());
+    await self.skipWaiting();
+  })());
 });
 
 self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys()
-      .then(keys => Promise.all(
-        keys.filter(key => key.startsWith('my-points-tracker-') && key !== CACHE_NAME)
-            .map(key => caches.delete(key))
-      ))
-      .then(() => self.clients.claim())
-  );
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.filter(key => key.startsWith('my-points-tracker-') && key !== CACHE_NAME).map(key => caches.delete(key)));
+    await self.clients.claim();
+  })());
 });
 
-async function cachedAppResponse(request) {
-  const cache = await caches.open(CACHE_NAME);
-  const exact = await cache.match(request, { ignoreSearch: true });
-  if (exact) return exact;
-  return await cache.match(APP_URL);
-}
-
 self.addEventListener('fetch', event => {
-  if (event.request.method !== 'GET') return;
-  const url = new URL(event.request.url);
+  const request = event.request;
+  if (request.method !== 'GET') return;
+  const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
-  if (event.request.mode === 'navigate') {
+  if (request.mode === 'navigate') {
     event.respondWith((async () => {
-      const cached = await cachedAppResponse(event.request);
-      if (cached) {
-        event.waitUntil(fetch(APP_URL, { cache: 'no-cache' }).then(async response => {
-          if (response && response.ok) {
-            const cache = await caches.open(CACHE_NAME);
-            await cache.put(APP_URL, response.clone());
-          }
-        }).catch(() => {}));
-        return cached;
-      }
+      const cache = await caches.open(CACHE_NAME);
+      const cached = await cache.match(request, { ignoreSearch: true }) || await cache.match(ROOT_URL) || await cache.match(APP_URL);
+      if (cached) return cached;
       try {
-        const response = await fetch(event.request);
-        if (response && response.ok) {
-          const cache = await caches.open(CACHE_NAME);
-          await cache.put(APP_URL, response.clone());
-        }
+        const response = await fetch(request);
+        if (response.ok) await cache.put(ROOT_URL, response.clone());
         return response;
-      } catch (error) {
-        return new Response('Points Tracker is not cached yet. Connect to the internet once, open the app, and try again.', {
-          status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8' }
-        });
+      } catch (_) {
+        return new Response('Points Tracker has not been cached for offline use yet. Connect once, open the tracker, and try again.', { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
       }
     })());
     return;
@@ -64,13 +48,13 @@ self.addEventListener('fetch', event => {
 
   event.respondWith((async () => {
     const cache = await caches.open(CACHE_NAME);
-    const cached = await cache.match(event.request, { ignoreSearch: true });
+    const cached = await cache.match(request, { ignoreSearch: true });
     if (cached) return cached;
     try {
-      const response = await fetch(event.request);
-      if (response && response.ok) await cache.put(event.request, response.clone());
+      const response = await fetch(request);
+      if (response.ok) await cache.put(request, response.clone());
       return response;
-    } catch (error) {
+    } catch (_) {
       return Response.error();
     }
   })());
