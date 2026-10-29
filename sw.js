@@ -1,6 +1,6 @@
-// Points Tracker service worker — version 9
+// Points Tracker service worker — version 10
 // Offline-first navigation and static assets. Does not require network access to open the app.
-const CACHE_NAME = 'my-points-tracker-v9';
+const CACHE_NAME = 'my-points-tracker-v10';
 const ROOT_URL = new URL('./', self.registration.scope).href;
 const APP_URL = new URL('./index.html', self.registration.scope).href;
 
