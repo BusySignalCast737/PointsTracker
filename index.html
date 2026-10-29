@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#173b35">
-<meta name="app-version" content="6">
+<meta name="app-version" content="8">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="My Points">
@@ -238,7 +238,7 @@ draw();
 // Offline support is available when this app is hosted over HTTPS (for example, GitHub Pages).
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js?v=7').catch(err => console.warn('Offline setup could not be enabled:', err));
+    navigator.serviceWorker.register('./sw.js?v=8', { updateViaCache: 'none' }).catch(err => console.warn('Offline setup could not be enabled:', err));
   });
 }
 </script>
