@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#173b35">
-<meta name="app-version" content="13">
+<meta name="app-version" content="14">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="My Points">
@@ -50,7 +50,7 @@
 <div class="card" style="padding:12px;margin-bottom:12px;background:#f8faf8">
  <div class="row" style="flex-wrap:wrap"><button class="btn" type="button" id="startScanner">Scan barcode with camera</button><button class="btn secondary" type="button" id="stopScanner" disabled>Stop camera</button></div>
  <video id="barcodeVideo" class="hidden" playsinline muted style="width:100%;max-height:220px;object-fit:cover;border-radius:12px;margin-top:10px;background:#172b27"></video>
- <div id="scannerMessage" class="muted" style="margin-top:8px">If camera scanning isn't supported by this browser, enter the UPC/EAN number below.</div>
+ <div id="scannerMessage" class="muted" style="margin-top:8px">Camera scanning uses the bundled ZXing-compatible scanner. Product lookup requires internet; manual barcode entry is always available.</div>
  <label for="barcodeInput">Barcode number</label><div class="row"><input id="barcodeInput" inputmode="numeric" autocomplete="off" placeholder="Enter UPC / EAN" class="grow"><button class="btn secondary" id="lookupBarcode" type="button">Look up</button></div>
  <div id="barcodeResult" class="muted" aria-live="polite" style="margin-top:8px"></div>
 </div>
@@ -109,8 +109,9 @@
  <div class="portion-actions"><button type="button" class="btn" id="portionAdd">Add to today</button><button type="button" class="btn secondary" id="portionSave">Save food first</button></div>
  <p class="muted" style="margin-bottom:0;margin-top:12px">All common measures are available. For conversions between weight, volume, and item counts, enter the food-specific equivalent when prompted; density and item sizes vary by food.</p>
  </div></div>
-<div class="foot">My Points Tracker · <strong>Version 13</strong> · Data saved on this device.<br>Personal tracking tool, not affiliated with WeightWatchers. Point calculator is an estimate, not an official WeightWatchers calculator.</div>
+<div class="foot">My Points Tracker · <strong>Version 14</strong> · Data saved on this device.<br>Personal tracking tool, not affiliated with WeightWatchers. Point calculator is an estimate, not an official WeightWatchers calculator.</div>
 </main>
+<script src="https://unpkg.com/@zxing/browser@0.1.5/umd/zxing-browser.min.js"></script>
 <script>
 (function(){
 const KEY='myPointsTracker.v1';
@@ -270,10 +271,27 @@ function openEditLog(id){const item=data.logs.find(x=>x.id===id);if(!item)return
 function closeEditLog(){$('editLogOverlay').classList.add('hidden');editingLogId=null}
 $('editLogClose').addEventListener('click',closeEditLog);$('editLogCancel').addEventListener('click',closeEditLog);$('editLogAmount').addEventListener('input',()=>{const amount=n($('editLogAmount').value),rate=n($('editLogOverlay').dataset.pointsPerAmount);if(amount>0)$('editLogPoints').value=String(Math.round(rate*amount*2)/2)});
 $('editLogForm').addEventListener('submit',e=>{e.preventDefault();const item=data.logs.find(x=>x.id===editingLogId);if(!item)return;const amount=n($('editLogAmount').value),points=n($('editLogPoints').value);if(amount<=0||points<0){alert('Enter a valid amount and points.');return}item.name=$('editLogName').value.trim();item.amount=amount;item.points=points;item.meal=$('editLogMeal').value;save();draw();closeEditLog()});
-let scanStream=null,scanActive=false;
-function stopBarcodeCamera(){scanActive=false;if(scanStream){scanStream.getTracks().forEach(t=>t.stop());scanStream=null}$('barcodeVideo').pause();$('barcodeVideo').srcObject=null;$('barcodeVideo').classList.add('hidden');$('stopScanner').disabled=true}
+let scanControls=null,scanReader=null,scanActive=false;
+function stopBarcodeCamera(){scanActive=false;try{if(scanControls&&typeof scanControls.stop==='function')scanControls.stop()}catch(_){}scanControls=null;try{if(scanReader&&typeof scanReader.reset==='function')scanReader.reset()}catch(_){}scanReader=null;const video=$('barcodeVideo');try{video.pause();if(video.srcObject)video.srcObject.getTracks().forEach(t=>t.stop())}catch(_){}video.srcObject=null;video.classList.add('hidden');$('stopScanner').disabled=true}
 $('stopScanner').addEventListener('click',stopBarcodeCamera);
-$('startScanner').addEventListener('click',async()=>{if(!('BarcodeDetector' in window)){ $('scannerMessage').textContent='This browser does not provide built-in barcode scanning. You can still enter the barcode number manually below; camera scanning can be added with a bundled scanner library in a later update.';return}try{const detector=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e']});scanStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});const video=$('barcodeVideo');video.srcObject=scanStream;video.classList.remove('hidden');await video.play();$('stopScanner').disabled=false;$('scannerMessage').textContent='Hold the barcode inside the camera view.';scanActive=true;const tick=async()=>{if(!scanActive)return;try{const codes=await detector.detect(video);if(codes.length){$('barcodeInput').value=codes[0].rawValue;stopBarcodeCamera();lookupProduct(codes[0].rawValue);return}}catch(err){}if(scanActive)requestAnimationFrame(tick)};requestAnimationFrame(tick)}catch(err){stopBarcodeCamera();$('scannerMessage').textContent='Camera access was unavailable. Check camera permission or enter the barcode number manually.'}});
+$('startScanner').addEventListener('click',async()=>{
+  const video=$('barcodeVideo');
+  if(!window.isSecureContext){$('scannerMessage').textContent='Camera access requires a secure HTTPS connection. Open the hosted tracker address, not a local file.';return}
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){$('scannerMessage').textContent='This app environment does not provide camera access. Check iPhone camera permissions and try opening the Home Screen app again.';return}
+  if(!window.ZXingBrowser||!window.ZXingBrowser.BrowserMultiFormatReader){$('scannerMessage').textContent='The barcode scanner library has not loaded yet. Connect to the internet, close and reopen the tracker, then try again. Manual barcode entry is still available.';return}
+  try{
+    $('scannerMessage').textContent='Starting camera… allow camera access if your iPhone asks.';
+    scanReader=new window.ZXingBrowser.BrowserMultiFormatReader();
+    video.classList.remove('hidden');
+    $('stopScanner').disabled=false;
+    scanActive=true;
+    scanControls=await scanReader.decodeFromVideoDevice(undefined,video,(result,err)=>{
+      if(!scanActive)return;
+      if(result){const code=typeof result.getText==='function'?result.getText():String(result.text||'');if(code){$('barcodeInput').value=code;stopBarcodeCamera();lookupProduct(code)}}
+    });
+    $('scannerMessage').textContent='Hold the UPC/EAN barcode steady inside the camera view. The rear camera is preferred when available.';
+  }catch(err){stopBarcodeCamera();const msg=(err&&err.name==='NotAllowedError')?'Camera permission was denied. Allow camera access for this Home Screen app in iPhone Settings, then try again.':(err&&err.name==='NotFoundError')?'No usable camera was found on this device. You can enter the barcode manually.':'Camera could not start in this app environment. Check camera permission and try again, or enter the barcode manually.';$('scannerMessage').textContent=msg}
+});
 async function lookupProduct(raw){const code=String(raw||'').replace(/\D/g,'');if(!/^\d{8,14}$/.test(code)){ $('barcodeResult').textContent='Enter a valid 8–14 digit UPC/EAN barcode.';return} $('barcodeResult').textContent='Looking up product…';try{const response=await fetch('https://world.openfoodfacts.org/api/v2/product/'+encodeURIComponent(code)+'.json?fields=code,product_name,brands,quantity,serving_size,nutriments',{headers:{'Accept':'application/json'}});if(!response.ok)throw new Error('Product database unavailable');const payload=await response.json();if(payload.status!==1||!payload.product)throw new Error('No product found for that barcode. You can enter it manually below.');const p=payload.product,nu=p.nutriments||{},name=[p.product_name,p.brands].filter(Boolean).join(' — ')||('Barcode '+code);let cal=Number(nu['energy-kcal_serving']),fat=Number(nu['fat_serving']),fiber=Number(nu['fiber_serving']),serving=p.serving_size||'1 serving';if(!Number.isFinite(cal)||cal<=0||!Number.isFinite(fat)||!Number.isFinite(fiber)){const kcal=Number(nu['energy-kcal_100g']),f=Number(nu['fat_100g']),fi=Number(nu['fiber_100g']);const grams=Number((String(serving).match(/[0-9]+(?:\.[0-9]+)?\s*g/i)||[])[0]?.match(/[0-9]+(?:\.[0-9]+)?/));if(Number.isFinite(kcal)&&Number.isFinite(f)&&Number.isFinite(fi)&&grams>0){const scale=grams/100;cal=kcal*scale;fat=f*scale;fiber=fi*scale}else throw new Error('Nutrition facts or serving size are incomplete in the product database. Enter the food manually or use the package label.')}const points=classicPoints(cal,fat,fiber);const food={id:String(Date.now()+Math.random()),name,points,serving,barcode:code,nutrition:{calories:cal,fat,fiber},source:'Open Food Facts'};const existing=data.foods.find(x=>x.barcode===code);if(existing){Object.assign(existing,food,{id:existing.id})}else data.foods.push(food);save();draw();$('barcodeResult').textContent='Found '+name+'. Estimated '+points+' points per '+serving+'. Saved to your food library on this device.';$('foodName').value=name;$('foodPoints').value=points;$('meal').value='Snack'}catch(err){$('barcodeResult').textContent=err.message||'Could not look up this barcode. Try again or enter the food manually.'}}
 $('lookupBarcode').addEventListener('click',()=>lookupProduct($('barcodeInput').value));
 $('exportJson').addEventListener('click',()=>download('my-points-tracker-backup-'+today()+'.json',JSON.stringify({...data,exportedAt:new Date().toISOString(),formatVersion:1},null,2),'application/json'));
@@ -288,7 +306,7 @@ draw();
 // Offline support is available when this app is hosted over HTTPS (for example, GitHub Pages).
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js?v=12', { updateViaCache: 'none' }).catch(err => console.warn('Offline setup could not be enabled:', err));
+    navigator.serviceWorker.register('./sw.js?v=14', { updateViaCache: 'none' }).catch(err => console.warn('Offline setup could not be enabled:', err));
   });
 }
 </script>
