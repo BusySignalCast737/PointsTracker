@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#173b35">
-<meta name="app-version" content="20">
+<meta name="app-version" content="21">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="My Points">
@@ -14,6 +14,47 @@
 <style>
 :root{--ink:#172b27;--muted:#667570;--green:#173b35;--mint:#dceee6;--paper:#f6f7f3;--card:#fff;--line:#e0e7e2;--orange:#df7d45;--red:#a43d36}
 *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}header{background:var(--green);color:#fff;padding:22px 18px 18px;padding-top:calc(18px + env(safe-area-inset-top));position:sticky;top:0;z-index:3}header h1{font-size:23px;margin:0}header p{margin:3px 0 0;color:#d9e8e1;font-size:13px}.wrap{max-width:760px;margin:auto;padding:16px 14px 50px}.tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:0 0 15px;padding:2px 0 7px}.tabs button{min-width:0;white-space:normal;line-height:1.2;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:12px;padding:11px 6px;font-size:14px;font-weight:650}.tabs button.active{background:var(--green);border-color:var(--green);color:#fff}.panel{display:none}.panel.active{display:block}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:17px;margin-bottom:13px;box-shadow:0 2px 8px #163a3508}.row{display:flex;gap:10px;align-items:center}.between{justify-content:space-between}.grow{flex:1;min-width:0}h2{font-size:18px;margin:0 0 12px}h3{font-size:15px;margin:0 0 7px}.muted{color:var(--muted);font-size:13px}.big{font-size:42px;font-weight:800;letter-spacing:-1.5px;line-height:1.1}.pill{background:var(--mint);color:var(--green);padding:5px 9px;border-radius:999px;font-size:12px;font-weight:750}.progress{height:9px;background:#e9eeeb;border-radius:99px;overflow:hidden;margin:13px 0 5px}.progress span{height:100%;display:block;background:#398565;border-radius:99px;width:0}.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat{background:#f8faf8;border-radius:12px;padding:12px}.stat strong{display:block;font-size:22px}.stat small{color:var(--muted)}label{display:block;font-size:13px;font-weight:700;margin:10px 0 5px}input,select,textarea{font:inherit;width:100%;padding:11px 12px;border:1px solid #cbd6cf;border-radius:10px;background:#fff;color:var(--ink);min-width:0}input[type=checkbox]{width:auto}button{font:inherit;cursor:pointer}.btn{border:0;background:var(--green);color:#fff;padding:11px 14px;border-radius:10px;font-weight:750}.btn.secondary{background:var(--mint);color:var(--green)}.btn.light{background:#f1f4f1;color:var(--ink);border:1px solid var(--line)}.btn.danger{background:#fff0ee;color:var(--red)}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}.formgrid .full{grid-column:1/-1}.foodrow,.logrow,.weightrow{display:flex;gap:10px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)}.foodrow:last-child,.logrow:last-child,.weightrow:last-child{border-bottom:0}.points{font-weight:800;font-size:17px;white-space:nowrap}.tinybtn{border:1px solid var(--line);background:white;border-radius:8px;padding:6px 9px}.empty{color:var(--muted);font-size:14px;padding:8px 0}.notice{background:#fff7e8;border:1px solid #f0d8a9;border-radius:12px;padding:12px;font-size:13px;color:#61471e}.chartwrap{height:230px;position:relative}canvas{width:100%;height:100%}.foot{font-size:12px;color:var(--muted);text-align:center;padding:14px 8px}.hidden{display:none!important}.inline{display:flex;gap:8px;align-items:center}.inline input{flex:1}.portion-overlay{position:fixed;inset:0;background:#10231fc9;z-index:20;display:flex;align-items:center;justify-content:center;padding:16px}.portion-box{width:100%;max-width:440px;max-height:90vh;overflow:auto;background:#fff;border-radius:18px;padding:20px;box-shadow:0 16px 50px #0003}.portion-box h2{margin-bottom:4px}.portion-result{background:#eef6f1;border-radius:12px;padding:12px;margin:14px 0}.portion-result strong{font-size:27px}.fraction-buttons{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.fraction-buttons button,.fraction-buttons>.fraction-buttons{display:none!important}.fraction-picker{display:block;max-width:220px;margin-top:7px}.fraction-picker select{padding:8px 10px;font-size:14px;background:#f8faf8;border-color:#cbd6cf}.portion-actions{display:flex;gap:8px;flex-wrap:wrap}.portion-actions button{flex:1}@media(min-width:620px){.wrap{padding:22px}.two{display:grid;grid-template-columns:1fr 1fr;gap:13px}.two .card{margin-bottom:0}.tabs{grid-template-columns:repeat(3,minmax(0,1fr));}.tabs button{white-space:normal;padding:10px 8px;font-size:14px}}
+
+/* Version 21 visual and usability refinements */
+:root{--paper:#f3f6f3;--line:#dce5df;--green:#17463d;--mint:#e4f1eb;--muted:#65736d;--soft:#f7faf8}
+body{line-height:1.5}
+header{padding-left:max(18px,calc((100vw - 720px)/2));padding-right:max(18px,calc((100vw - 720px)/2));box-shadow:0 2px 10px #102d2518}
+header h1{letter-spacing:-.35px}
+.wrap{max-width:720px;padding:15px 14px 48px}
+.tabs{gap:8px;margin:0 0 18px;padding:3px 0 9px}
+.tabs button{min-height:46px;border-radius:13px;background:#fff;border-color:#d9e3dc;box-shadow:0 1px 2px #163a3508;transition:background .15s,border-color .15s}
+.tabs button.active{background:var(--green);border-color:var(--green);box-shadow:0 3px 8px #173b3522}
+.tabs button:focus-visible,.btn:focus-visible,.tinybtn:focus-visible{outline:3px solid #e4a16d;outline-offset:2px}
+.panel-intro{padding:3px 3px 13px;margin:0 0 5px}
+.panel-intro h2{font-size:25px;line-height:1.2;letter-spacing:-.55px;margin:2px 0 5px}
+.panel-intro p{font-size:13px;color:var(--muted);margin:0;max-width:48ch}
+.section-kicker{font-size:10px;letter-spacing:1.25px;font-weight:800;color:#668177}
+.card{border:1px solid #dce5df;border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 2px 7px #183c3210}
+.card h2{font-size:17px;letter-spacing:-.15px;padding-bottom:9px;margin:0 0 13px;border-bottom:1px solid #edf1ee}
+.card h3{font-size:14px;letter-spacing:.05px}
+label{margin:12px 0 6px;color:#344a42;font-size:12px;letter-spacing:.05px}
+input,select,textarea{border-color:#cbd8d0;border-radius:11px;min-height:44px;background:#fff}
+input:focus,select:focus,textarea:focus{outline:2px solid #8db8a3;outline-offset:1px;border-color:#5b9279}
+.btn{min-height:43px;border-radius:11px;padding:10px 14px;box-shadow:0 1px 2px #102d2512}
+.btn.secondary,.btn.light{border:1px solid #d5e3da}
+.btn:disabled{opacity:.48;cursor:not-allowed}
+.stats{gap:9px}.stat{background:#f4f8f5;border:1px solid #e7eee9;border-radius:13px;padding:12px}
+.foodrow,.logrow,.weightrow{padding:12px 0;gap:12px}
+.subsection-heading{font-size:11px;letter-spacing:.7px;font-weight:800;color:#526d61;text-transform:uppercase;margin:3px 0 8px}
+.scanner-box{background:#f6f9f7;border:1px solid #dce7df;border-radius:14px;padding:13px;margin:12px 0 16px}
+.scanner-box .row{gap:8px}
+#barcodeVideo{max-height:260px;border:1px solid #d2ded6;background:#142d27}
+#scannerMessage{line-height:1.45}
+#barcodeResult{padding-top:3px}
+.or-divider{display:flex;align-items:center;gap:10px;color:#7a8982;font-size:10px;font-weight:800;letter-spacing:.75px;margin:17px 0 13px}
+.or-divider:before,.or-divider:after{content:"";height:1px;background:#e2e9e4;flex:1}
+.progress{height:10px;background:#e9efeb}
+.progress span{background:#398568}
+.pill{padding:5px 10px}
+.notice{border-radius:12px;line-height:1.45}
+.empty{padding:12px 0}
+@media(max-width:420px){.wrap{padding-left:12px;padding-right:12px}.card{padding:14px}.tabs{gap:6px}.tabs button{font-size:12px;padding:9px 4px;min-height:44px}.panel-intro h2{font-size:23px}.row{gap:8px}}
+
 </style>
 </head>
 <body>
@@ -23,6 +64,7 @@
 <button class="active" data-tab="today">Today</button><button data-tab="activity">Activity points</button><button data-tab="history">History</button><button data-tab="foods">Saved foods</button><button data-tab="weight">Weight</button><button data-tab="settings">Settings & backup</button>
 </div>
 <section id="today" class="panel active">
+<div class="panel-intro"><div class="section-kicker">DAILY TRACKING</div><h2>Today</h2><p>Your daily and weekly points, food log, and quick tools.</p></div>
 <div class="card">
 <div class="row between"><div><div class="muted" id="todayDate"></div><h2 style="margin:2px 0">Points today</h2></div><span class="pill" id="dayStatus">On track</span></div>
 <div class="row between" style="align-items:end"><div><div class="big" id="remaining">—</div><div class="muted">points remaining</div></div><div style="text-align:right"><strong id="used">0</strong><div class="muted">points used</div></div></div>
@@ -47,7 +89,8 @@
 <div class="card">
 <h2>Log food</h2>
 <div class="notice" style="margin-bottom:12px">Scan a packaged food barcode to look up its nutrition facts. Product lookup needs an internet connection; foods you save remain on this device for offline use.</div>
-<div class="card" style="padding:12px;margin-bottom:12px;background:#f8faf8">
+<div class="scanner-box">
+ <div class="subsection-heading">Barcode scanner</div>
  <div class="row" style="flex-wrap:wrap"><button class="btn" type="button" id="startScanner">Scan barcode with camera</button><button class="btn secondary" type="button" id="stopScanner" disabled>Stop camera</button><button class="btn secondary hidden" type="button" id="scannerTorch" aria-pressed="false">Turn on flashlight</button></div>
  <video id="barcodeVideo" class="hidden" playsinline muted autoplay style="width:100%;max-height:300px;object-fit:contain;border-radius:12px;margin-top:10px;background:#172b27"></video>
  <div id="scannerMessage" class="muted" style="margin-top:8px">Improved UPC/EAN scanning with continuous focus where supported. Product lookup requires internet; manual barcode entry is always available.</div>
@@ -55,14 +98,15 @@
  <div id="barcodeResult" class="muted" aria-live="polite" style="margin-top:8px"></div>
 </div>
 
-<label for="foodSelect">Add a saved food</label><div class="row"><select id="foodSelect" class="grow"><option value="">Choose a saved food…</option></select><button class="btn" id="addSaved">Add</button></div>
-<div style="text-align:center;color:var(--muted);font-size:12px;margin:10px">— or enter a food manually —</div>
+<div class="subsection-heading">Use a saved food</div><label for="foodSelect">Add a saved food</label><div class="row"><select id="foodSelect" class="grow"><option value="">Choose a saved food…</option></select><button class="btn" id="addSaved">Add</button></div>
+<div class="or-divider"><span>OR ENTER A FOOD MANUALLY</span></div>
 <form id="logForm"><div class="formgrid"><div class="full"><label for="foodName">Food / meal</label><input id="foodName" required placeholder="e.g. Turkey sandwich"></div><div><label for="foodPoints">Points per listed serving</label><input id="foodPoints" type="number" min="0" max="99" step=".5" required placeholder="e.g. 6"></div><div><label for="manualServingQty">Serving quantity</label><input id="manualServingQty" type="text" inputmode="decimal" value="1" placeholder="1"><div class="fraction-buttons" data-fraction-target="manualServingQty"><button type="button" class="tinybtn" data-fraction="1/4">¼</button><button type="button" class="tinybtn" data-fraction="1/3">⅓</button><button type="button" class="tinybtn" data-fraction="1/2">½</button><button type="button" class="tinybtn" data-fraction="3/4">¾</button><button type="button" class="tinybtn" data-fraction="1">1</button><div class="fraction-buttons" aria-label="Add a fraction to the whole-number amount"><button type="button" class="tinybtn" data-mixed-fraction="1/8">+⅛</button><button type="button" class="tinybtn" data-mixed-fraction="1/4">+¼</button><button type="button" class="tinybtn" data-mixed-fraction="1/3">+⅓</button><button type="button" class="tinybtn" data-mixed-fraction="1/2">+½</button><button type="button" class="tinybtn" data-mixed-fraction="2/3">+⅔</button><button type="button" class="tinybtn" data-mixed-fraction="3/4">+¾</button></div></div></div><div><label for="manualServingUnit">Serving measurement</label><select id="manualServingUnit"><option value="cup">Cup</option><option value="tbsp">Tablespoon</option><option value="tsp">Teaspoon</option><option value="oz">Ounce</option><option value="g">Gram</option><option value="mg">Milligram</option><option value="ml">Milliliter</option><option value="piece">Piece</option><option value="slice">Slice</option><option value="item">Item</option><option value="serving">Serving</option></select></div><div><label for="meal">Meal</label><select id="meal"><option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Snack</option><option>Other</option></select></div></div><div class="row" style="margin-top:12px"><button class="btn" type="submit">Add to today's log</button><button class="btn secondary" type="button" id="saveFoodFromLog">Save food too</button></div></form>
 </div>
 
 </section>
 
 <section id="activity" class="panel">
+<div class="panel-intro"><div class="section-kicker">MOVEMENT</div><h2>Activity points</h2><p>Record activity and see the points earned today.</p></div>
 <div class="card" id="activityCard">
 <h2>Activity Points</h2>
 <p class="muted">Log movement to earn estimated points for today. This is a custom estimate, not an official historical Weight Watchers formula. Activity points are for today only and do not carry over.</p>
@@ -72,6 +116,7 @@
 </div>
 </section>
 <section id="history" class="panel">
+<div class="panel-intro"><div class="section-kicker">PAST ENTRIES</div><h2>History</h2><p>Review previous food logs and revisit a day.</p></div>
 <div class="card">
 <h2>Food history</h2>
 <p class="muted">Choose a date to review foods you logged on that day. Tap “Add to today” to copy a food entry to today without changing the original entry.</p>
@@ -83,6 +128,7 @@
 <div class="card"><h2>Recent days</h2><p class="muted">Pick a day below to see its food log.</p><div id="recentDays"></div></div>
 </section>
 <section id="foods" class="panel">
+<div class="panel-intro"><div class="section-kicker">YOUR FOOD LISTS</div><h2>Saved foods & meals</h2><p>Find foods, save your regular items, and build meals you use often.</p></div>
 <div class="card"><h2>Built-in food library</h2><p class="muted">Search common foods and portions. Point values are estimates calculated from typical nutrition data using the approximate classic-Points formula in this app; brands and recipes vary. You can log a result or save it to your personal list.</p>
 <label for="librarySearch">Search the food library</label><input id="librarySearch" type="search" placeholder="Try: banana, oatmeal, chicken, yogurt…" autocomplete="off">
 <div id="libraryList" style="margin-top:8px"></div></div>
@@ -96,11 +142,13 @@
 <div class="card"><div id="savedList"></div></div>
 </section>
 <section id="weight" class="panel">
+<div class="panel-intro"><div class="section-kicker">PROGRESS</div><h2>Weight</h2><p>Record weigh-ins and follow your progress over time.</p></div>
 <div class="card"><h2>Record a weigh-in</h2><form id="weightForm"><div class="formgrid"><div><label for="weightDate">Date</label><input id="weightDate" type="date" required></div><div><label for="weightValue">Weight (lb)</label><input id="weightValue" type="number" min="1" max="1500" step=".1" required placeholder="e.g. 215.4"></div><div class="full"><label for="weightNote">Note (optional)</label><input id="weightNote" placeholder="e.g. morning weigh-in"></div></div><button class="btn" style="margin-top:12px" type="submit">Save weigh-in</button></form></div>
 <div class="card"><h2>Weight trend</h2><div class="stats"><div class="stat"><small>Latest weight</small><strong id="latestWeight">—</strong></div><div class="stat"><small>Change from start</small><strong id="weightChange">—</strong></div></div><div class="chartwrap"><canvas id="weightChart" aria-label="Weight history chart"></canvas></div><div class="muted">Chart uses your recorded weigh-ins. A positive change means weight increased.</div></div>
 <div class="card"><h2>Weigh-in history</h2><div id="weightList"></div></div>
 </section>
 <section id="settings" class="panel">
+<div class="panel-intro"><div class="section-kicker">APP PREFERENCES</div><h2>Settings & backup</h2><p>Manage your allowance and protect your tracker data.</p></div>
 <div class="card"><h2>Your settings</h2><form id="settingsForm"><label for="allowance">Daily points allowance</label><input id="allowance" type="number" min="1" max="99" step="1" required placeholder="Enter your allowance"><label for="startWeight">Starting weight (optional, lb)</label><input id="startWeight" type="number" min="1" max="1500" step=".1" placeholder="Can be set from first weigh-in"><label for="goalWeight">Goal weight (optional, lb)</label><input id="goalWeight" type="number" min="1" max="1500" step=".1" placeholder="Optional"><button class="btn" style="margin-top:13px" type="submit">Save settings</button></form><p class="muted">Your allowance is personal to your chosen program. This tracker does not determine a medically appropriate target.</p></div>
 <div class="card"><h2>Backup & restore</h2><p class="muted">Export a complete JSON backup to keep your settings, foods, food logs, activity logs, and weigh-ins. CSV exports are also available for spreadsheets.</p><div class="row" style="flex-wrap:wrap"><button class="btn" id="exportJson">Export full backup (JSON)</button><button class="btn secondary" id="exportCsv">Export tables (CSV)</button></div><label for="importFile">Restore a JSON backup</label><input id="importFile" type="file" accept=".json,application/json"><p class="muted">Restoring replaces the data currently stored in this tracker on this device.</p></div>
 <div class="card"><h2>Offline & privacy</h2><p class="muted">This single-file version stores data locally in your browser on this device and does not send it to a server. Open it once while online or save it to Files and open it in a browser, then test it in Airplane Mode. Browser file-opening behavior varies; for dependable offline use, the next step is hosting it as an installable web app (PWA) and adding it to your Home Screen.</p><div class="notice">Keep regular backups. Clearing browser data, deleting the saved file, or changing browsers can make locally stored data unavailable.</div><button class="btn danger" id="clearData" style="margin-top:12px">Erase all tracker data</button></div>
@@ -114,7 +162,7 @@
  <div class="portion-actions"><button type="button" class="btn" id="portionAdd">Add to today</button><button type="button" class="btn secondary" id="portionSave">Save food first</button></div>
  <p class="muted" style="margin-bottom:0;margin-top:12px">All common measures are available. For conversions between weight, volume, and item counts, enter the food-specific equivalent when prompted; density and item sizes vary by food.</p>
  </div></div>
-<div class="foot">My Points Tracker · <strong>Version 20</strong> · Data saved on this device.<br>Personal tracking tool, not affiliated with WeightWatchers. Point calculator is an estimate, not an official WeightWatchers calculator.</div>
+<div class="foot">My Points Tracker · <strong>Version 21</strong> · Data saved on this device.<br>Personal tracking tool, not affiliated with WeightWatchers. Point calculator is an estimate, not an official WeightWatchers calculator.</div>
 </main>
 <script src="https://unpkg.com/@zxing/browser@0.1.5/umd/zxing-browser.min.js"></script>
 <script>
@@ -329,12 +377,24 @@ function stopBarcodeCamera(){
 $('stopScanner').addEventListener('click',stopBarcodeCamera);
 $('scannerTorch').addEventListener('click',async()=>{
   const video=$('barcodeVideo'),track=video.srcObject&&video.srcObject.getVideoTracks?video.srcObject.getVideoTracks()[0]:null;
+  const nextState=!scannerTorchOn;
   try{
-    if(scanControls&&typeof scanControls.switchTorch==='function')await scanControls.switchTorch();
-    else if(track&&typeof track.applyConstraints==='function')await track.applyConstraints({advanced:[{torch:!scannerTorchOn}]});
-    else throw new Error('Flashlight control is not available on this camera.');
-    scannerTorchOn=!scannerTorchOn;$('scannerTorch').textContent=scannerTorchOn?'Turn off flashlight':'Turn on flashlight';$('scannerTorch').setAttribute('aria-pressed',String(scannerTorchOn));
-  }catch(_){$('scannerMessage').textContent='This iPhone camera does not expose a flashlight control in the Home Screen app.';$('scannerTorch').classList.add('hidden')}
+    // ZXing's scanner control expects the requested state, not a no-argument toggle.
+    if(scanControls&&typeof scanControls.switchTorch==='function'){
+      await scanControls.switchTorch(nextState);
+    }else if(track&&typeof track.applyConstraints==='function'){
+      await track.applyConstraints({advanced:[{torch:nextState}]});
+    }else{
+      throw new Error('Flashlight control is not available on this camera.');
+    }
+    scannerTorchOn=nextState;
+    $('scannerTorch').textContent=scannerTorchOn?'Turn off flashlight':'Turn on flashlight';
+    $('scannerTorch').setAttribute('aria-pressed',String(scannerTorchOn));
+    $('scannerMessage').textContent=scannerTorchOn?'Flashlight is on.':'Flashlight is off.';
+  }catch(err){
+    $('scannerMessage').textContent='The iPhone camera did not accept the flashlight command. Try the rear camera in the browser, or continue scanning in a brighter area.';
+    $('scannerTorch').classList.add('hidden');
+  }
 });
 $('startScanner').addEventListener('click',async()=>{
   const video=$('barcodeVideo');
@@ -364,7 +424,7 @@ $('startScanner').addEventListener('click',async()=>{
     // Show the flashlight control only when this camera/browser reports support.
     const track=video.srcObject&&video.srcObject.getVideoTracks?video.srcObject.getVideoTracks()[0]:null;
     let hasTorch=!!(scanControls&&typeof scanControls.switchTorch==='function');
-    try{const caps=track&&track.getCapabilities?track.getCapabilities():null;hasTorch=hasTorch||!!(caps&&caps.torch)}catch(_){}
+    try{const caps=track&&track.getCapabilities?track.getCapabilities():null;hasTorch=hasTorch||!!(caps&&caps.torch===true)}catch(_){}
     if(hasTorch)$('scannerTorch').classList.remove('hidden');
     $('scannerMessage').textContent='Move the barcode into view and hold it a few inches away. The scanner is set to work harder on UPC/EAN labels; autofocus is used when supported.';
   }catch(err){stopBarcodeCamera();const msg=(err&&err.name==='NotAllowedError')?'Camera permission was denied. Allow camera access for this Home Screen app in iPhone Settings, then try again.':(err&&err.name==='NotFoundError')?'No usable camera was found on this device. You can enter the barcode manually.':(err&&err.name==='OverconstrainedError')?'The camera could not use the requested settings. Try again, or enter the barcode manually.':'Camera could not start in this app environment. Check camera permission and try again, or enter the barcode manually.';$('scannerMessage').textContent=msg}
@@ -383,7 +443,7 @@ draw();
 // Offline support is available when this app is hosted over HTTPS (for example, GitHub Pages).
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js?v=20', { updateViaCache: 'none' }).catch(err => console.warn('Offline setup could not be enabled:', err));
+    navigator.serviceWorker.register('./sw.js?v=21', { updateViaCache: 'none' }).catch(err => console.warn('Offline setup could not be enabled:', err));
   });
 }
 </script>

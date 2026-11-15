@@ -1,5 +1,5 @@
-// Points Tracker service worker — version 20
-const CACHE_NAME = 'my-points-tracker-v20';
+// Points Tracker service worker — version 21
+const CACHE_NAME = 'my-points-tracker-v21';
 const ROOT_URL = new URL('./', self.registration.scope).href;
 const APP_URL = new URL('./index.html', self.registration.scope).href;
 const ZXING_URL = 'https://unpkg.com/@zxing/browser@0.1.5/umd/zxing-browser.min.js';
