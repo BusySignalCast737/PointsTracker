@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#173b35">
-<meta name="app-version" content="21">
+<meta name="app-version" content="22">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="My Points">
@@ -55,16 +55,41 @@ input:focus,select:focus,textarea:focus{outline:2px solid #8db8a3;outline-offset
 .empty{padding:12px 0}
 @media(max-width:420px){.wrap{padding-left:12px;padding-right:12px}.card{padding:14px}.tabs{gap:6px}.tabs button{font-size:12px;padding:9px 4px;min-height:44px}.panel-intro h2{font-size:23px}.row{gap:8px}}
 
+
+/* Version 22: dashboard-first layout and swipeable section navigation */
+.tabs-shell{position:relative;margin:0 0 18px}
+.tabs{display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;overscroll-behavior-x:contain;padding:3px 3px 10px;margin:0;touch-action:pan-x}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:0 0 auto;min-width:86px;white-space:nowrap;scroll-snap-align:start;padding:11px 15px;font-size:13px;min-height:44px}
+.tabs button[data-tab="settings"]{min-width:100px}
+.tabs-hint{font-size:10px;color:#829089;text-align:right;letter-spacing:.2px;padding:0 5px 0 0;margin-top:-5px}
+.tabs-hint span{font-size:13px;color:#527567;margin-left:3px}
+#today .card{margin-bottom:13px}
+#today #weeklyCard{background:linear-gradient(145deg,#fff 0%,#f7fbf8 100%)}
+#addfood .scanner-box{margin-top:10px}
+#addfood .panel-intro{margin-bottom:9px}
+.panel{scroll-margin-top:12px}
+@media(max-width:420px){.tabs{gap:7px}.tabs button{padding:10px 13px;font-size:12px;min-width:78px}.tabs button[data-tab="settings"]{min-width:94px}.tabs-hint{font-size:10px}}
+
 </style>
 </head>
 <body>
 <header><h1>My Points Tracker</h1><p>Personal food log · weight history · offline-ready</p></header>
 <main class="wrap">
-<div class="tabs" role="tablist">
-<button class="active" data-tab="today">Today</button><button data-tab="activity">Activity points</button><button data-tab="history">History</button><button data-tab="foods">Saved foods</button><button data-tab="weight">Weight</button><button data-tab="settings">Settings & backup</button>
+<div class="tabs-shell">
+ <nav class="tabs" role="tablist" aria-label="Tracker sections" tabindex="0">
+  <button class="active" role="tab" aria-selected="true" aria-controls="today" data-tab="today">Today</button>
+  <button role="tab" aria-selected="false" aria-controls="addfood" data-tab="addfood">Add food</button>
+  <button role="tab" aria-selected="false" aria-controls="activity" data-tab="activity">Activity</button>
+  <button role="tab" aria-selected="false" aria-controls="history" data-tab="history">History</button>
+  <button role="tab" aria-selected="false" aria-controls="foods" data-tab="foods">Saved foods</button>
+  <button role="tab" aria-selected="false" aria-controls="weight" data-tab="weight">Weight</button>
+  <button role="tab" aria-selected="false" aria-controls="settings" data-tab="settings">Settings</button>
+ </nav>
+ <div class="tabs-hint" aria-hidden="true">Swipe for more sections <span>→</span></div>
 </div>
 <section id="today" class="panel active">
-<div class="panel-intro"><div class="section-kicker">DAILY TRACKING</div><h2>Today</h2><p>Your daily and weekly points, food log, and quick tools.</p></div>
+<div class="panel-intro"><div class="section-kicker">DAILY TRACKING</div><h2>Today</h2><p>Your daily and weekly points, plus everything you have eaten today.</p></div>
 <div class="card">
 <div class="row between"><div><div class="muted" id="todayDate"></div><h2 style="margin:2px 0">Points today</h2></div><span class="pill" id="dayStatus">On track</span></div>
 <div class="row between" style="align-items:end"><div><div class="big" id="remaining">—</div><div class="muted">points remaining</div></div><div style="text-align:right"><strong id="used">0</strong><div class="muted">points used</div></div></div>
@@ -81,6 +106,11 @@ input:focus,select:focus,textarea:focus{outline:2px solid #8db8a3;outline-offset
 <div class="card">
 <h2>Today's food log</h2><div id="logList"></div><div class="row between" style="border-top:1px solid var(--line);padding-top:12px;margin-top:6px"><strong>Total points</strong><strong id="totalLog">0</strong></div>
 </div>
+
+
+</section>
+<section id="addfood" class="panel">
+ <div class="panel-intro"><div class="section-kicker">FOOD ENTRY & TOOLS</div><h2>Add food</h2><p>Scan a package, calculate classic Points, choose a saved food, or enter food manually.</p></div>
 <div class="card">
 <h2>Quick point calculator</h2>
 <p class="muted">Estimate classic Points from nutrition information. Results are estimates; confirm that this formula matches the exact original program you used.</p>
@@ -102,9 +132,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid #8db8a3;outline-offset
 <div class="or-divider"><span>OR ENTER A FOOD MANUALLY</span></div>
 <form id="logForm"><div class="formgrid"><div class="full"><label for="foodName">Food / meal</label><input id="foodName" required placeholder="e.g. Turkey sandwich"></div><div><label for="foodPoints">Points per listed serving</label><input id="foodPoints" type="number" min="0" max="99" step=".5" required placeholder="e.g. 6"></div><div><label for="manualServingQty">Serving quantity</label><input id="manualServingQty" type="text" inputmode="decimal" value="1" placeholder="1"><div class="fraction-buttons" data-fraction-target="manualServingQty"><button type="button" class="tinybtn" data-fraction="1/4">¼</button><button type="button" class="tinybtn" data-fraction="1/3">⅓</button><button type="button" class="tinybtn" data-fraction="1/2">½</button><button type="button" class="tinybtn" data-fraction="3/4">¾</button><button type="button" class="tinybtn" data-fraction="1">1</button><div class="fraction-buttons" aria-label="Add a fraction to the whole-number amount"><button type="button" class="tinybtn" data-mixed-fraction="1/8">+⅛</button><button type="button" class="tinybtn" data-mixed-fraction="1/4">+¼</button><button type="button" class="tinybtn" data-mixed-fraction="1/3">+⅓</button><button type="button" class="tinybtn" data-mixed-fraction="1/2">+½</button><button type="button" class="tinybtn" data-mixed-fraction="2/3">+⅔</button><button type="button" class="tinybtn" data-mixed-fraction="3/4">+¾</button></div></div></div><div><label for="manualServingUnit">Serving measurement</label><select id="manualServingUnit"><option value="cup">Cup</option><option value="tbsp">Tablespoon</option><option value="tsp">Teaspoon</option><option value="oz">Ounce</option><option value="g">Gram</option><option value="mg">Milligram</option><option value="ml">Milliliter</option><option value="piece">Piece</option><option value="slice">Slice</option><option value="item">Item</option><option value="serving">Serving</option></select></div><div><label for="meal">Meal</label><select id="meal"><option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Snack</option><option>Other</option></select></div></div><div class="row" style="margin-top:12px"><button class="btn" type="submit">Add to today's log</button><button class="btn secondary" type="button" id="saveFoodFromLog">Save food too</button></div></form>
 </div>
-
 </section>
-
 <section id="activity" class="panel">
 <div class="panel-intro"><div class="section-kicker">MOVEMENT</div><h2>Activity points</h2><p>Record activity and see the points earned today.</p></div>
 <div class="card" id="activityCard">
@@ -162,7 +190,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid #8db8a3;outline-offset
  <div class="portion-actions"><button type="button" class="btn" id="portionAdd">Add to today</button><button type="button" class="btn secondary" id="portionSave">Save food first</button></div>
  <p class="muted" style="margin-bottom:0;margin-top:12px">All common measures are available. For conversions between weight, volume, and item counts, enter the food-specific equivalent when prompted; density and item sizes vary by food.</p>
  </div></div>
-<div class="foot">My Points Tracker · <strong>Version 21</strong> · Data saved on this device.<br>Personal tracking tool, not affiliated with WeightWatchers. Point calculator is an estimate, not an official WeightWatchers calculator.</div>
+<div class="foot">My Points Tracker · <strong>Version 22</strong> · Data saved on this device.<br>Personal tracking tool, not affiliated with WeightWatchers. Point calculator is an estimate, not an official WeightWatchers calculator.</div>
 </main>
 <script src="https://unpkg.com/@zxing/browser@0.1.5/umd/zxing-browser.min.js"></script>
 <script>
@@ -313,7 +341,13 @@ drawChart(ws);
 }
 function drawChart(ws){const c=$('weightChart'),ctx=c.getContext('2d'),rect=c.getBoundingClientRect(),dpr=window.devicePixelRatio||1;c.width=Math.max(1,rect.width*dpr);c.height=Math.max(1,rect.height*dpr);ctx.scale(dpr,dpr);const w=rect.width,h=rect.height;ctx.clearRect(0,0,w,h);if(!ws.length){ctx.fillStyle='#667570';ctx.font='14px sans-serif';ctx.textAlign='center';ctx.fillText('Your weight chart will appear here',w/2,h/2);return}const vals=ws.map(x=>n(x.weight)),min=Math.min(...vals)-2,max=Math.max(...vals)+2, left=38,right=12,top=18,bottom=30, pw=w-left-right,ph=h-top-bottom;ctx.font='11px sans-serif';ctx.fillStyle='#667570';ctx.strokeStyle='#e0e7e2';ctx.lineWidth=1;for(let i=0;i<4;i++){const y=top+ph*i/3;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(w-right,y);ctx.stroke();ctx.fillText(fmt(max-(max-min)*i/3),2,y+4)}const pts=ws.map((p,i)=>({x:left+(ws.length===1?pw/2:pw*i/(ws.length-1)),y:top+ph*(max-n(p.weight))/(max-min),p}));ctx.strokeStyle='#398565';ctx.lineWidth=2.5;ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();pts.forEach((p,i)=>{ctx.fillStyle='#173b35';ctx.beginPath();ctx.arc(p.x,p.y,3.5,0,Math.PI*2);ctx.fill();if(i===0||i===pts.length-1||pts.length<=5){ctx.fillStyle='#667570';ctx.textAlign=i===0?'left':i===pts.length-1?'right':'center';ctx.fillText(p.p.date.slice(5),p.x, h-8)}})}
 function addLog(name,points,meal,extra={}){data.logs.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random()),date:today(),name,points:n(points),meal:meal||'Other',...extra});save();draw()}
-$('tabs');document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab));if(b.dataset.tab==='weight')draw();if(b.dataset.tab==='history')renderHistory()}));
+const tabButtons=[...document.querySelectorAll('[data-tab]')];
+tabButtons.forEach(b=>b.addEventListener('click',()=>{
+ tabButtons.forEach(x=>{const active=x===b;x.classList.toggle('active',active);x.setAttribute('aria-selected',active?'true':'false')});
+ document.querySelectorAll('.panel').forEach(x=>{const active=x.id===b.dataset.tab;x.classList.toggle('active',active);x.setAttribute('aria-hidden',active?'false':'true')});
+ b.scrollIntoView({behavior:'smooth',block:'nearest',inline:'nearest'});
+ if(b.dataset.tab==='weight')draw();if(b.dataset.tab==='history')renderHistory();
+}));
 $('historyDate').addEventListener('change',renderHistory);$('historyToday').addEventListener('click',()=>{$('historyDate').value=today();renderHistory()});
 $('logForm').addEventListener('submit',e=>{e.preventDefault();const name=$('foodName').value.trim(),points=n($('foodPoints').value),amount=parseAmount($('manualServingQty').value)||1,unit=$('manualServingUnit').value,serving=prettyQty(amount)+' '+unit;addLog(name+' ('+serving+')',points,$('meal').value,{amount,unit,serving});$('foodName').value='';$('foodPoints').value='';$('manualServingQty').value='1';});
 function logSaved(id){const f=data.foods.find(x=>x.id===id);if(f)addLog(f.name,f.points,'Other')}
@@ -443,7 +477,7 @@ draw();
 // Offline support is available when this app is hosted over HTTPS (for example, GitHub Pages).
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js?v=21', { updateViaCache: 'none' }).catch(err => console.warn('Offline setup could not be enabled:', err));
+    navigator.serviceWorker.register('./sw.js?v=22', { updateViaCache: 'none' }).catch(err => console.warn('Offline setup could not be enabled:', err));
   });
 }
 </script>
