@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#173b35">
-<meta name="app-version" content="23">
+<meta name="app-version" content="24">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="My Points">
@@ -72,7 +72,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid #8db8a3;outline-offset
 @media(max-width:420px){.tabs{gap:7px}.tabs button{padding:10px 13px;font-size:12px;min-width:78px}.tabs button[data-tab="settings"]{min-width:94px}.tabs-hint{font-size:10px}}
 
 
-/* Version 23: two-column navigation and stable iPhone keyboard behavior */
+/* Version 24: two-column navigation and stable iPhone keyboard behavior */
 html,body{overflow-anchor:none}
 header{position:relative;top:auto}
 .tabs-shell{margin:0 0 18px}
@@ -82,6 +82,25 @@ header{position:relative;top:auto}
 #libraryList,#mealFoodResults{max-height:250px;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;overflow-anchor:none}
 input,select,textarea{scroll-margin-top:18px;scroll-margin-bottom:24px}
 @media(max-width:420px){.tabs{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.tabs button{min-height:52px;font-size:13px;padding:10px 7px}}
+
+
+/* Version 24: compact two-row swipe navigation and search-first personal food list */
+.tabs-shell{width:100%;overflow:hidden;margin:0 0 14px}
+.tabs{display:grid;grid-auto-flow:column;grid-template-rows:repeat(2,40px);grid-auto-columns:112px;grid-auto-rows:40px;gap:7px 8px;width:100%;overflow-x:auto;overflow-y:hidden;white-space:nowrap;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;overscroll-behavior-x:contain;touch-action:pan-x;padding:2px 2px 6px;margin:0}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{width:112px;min-width:0;min-height:40px;height:40px;white-space:nowrap;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.15;padding:7px 8px;font-size:12px;border-radius:11px;scroll-snap-align:start;box-shadow:0 1px 2px #163a3508}
+.tabs button[data-tab="settings"]{min-width:0;width:112px}
+.tabs button:nth-child(1){grid-column:1;grid-row:1}
+.tabs button:nth-child(2){grid-column:2;grid-row:1}
+.tabs button:nth-child(3){grid-column:3;grid-row:1}
+.tabs button:nth-child(4){grid-column:1;grid-row:2}
+.tabs button:nth-child(5){grid-column:2;grid-row:2}
+.tabs button:nth-child(6){grid-column:3;grid-row:2}
+.tabs button:nth-child(7){grid-column:4;grid-row:1}
+.saved-search-results{margin-top:8px;max-height:330px;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.saved-search-results .foodrow{gap:8px}
+.saved-search-results .points{font-size:14px}
+@media(max-width:360px){.tabs{grid-auto-columns:104px}.tabs button,.tabs button[data-tab="settings"]{width:104px;font-size:11px}.saved-search-results .foodrow{gap:6px}.saved-search-results .tinybtn{padding:6px 7px}}
 
 </style>
 </head>
@@ -178,7 +197,9 @@ input,select,textarea{scroll-margin-top:18px;scroll-margin-bottom:24px}
 <div class="formgrid"><div class="full"><label for="mealFoodSearch">Search foods to add</label><input id="mealFoodSearch" type="search" autocomplete="off" placeholder="Type a food name, e.g. Greek yogurt"><div id="mealFoodResults" class="muted" style="margin-top:6px" aria-live="polite">Start typing to search your saved foods and built-in library.</div><div id="mealFoodSelected" class="notice hidden" style="margin-top:8px"></div></div><div><label for="mealFoodAmount">Amount of listed serving</label><input id="mealFoodAmount" type="text" value="1" inputmode="decimal" placeholder="1/2"></div><div><label for="mealFoodMeal">Log under</label><select id="mealFoodMeal"><option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Snack</option></select></div></div>
 <div class="fraction-buttons" data-fraction-target="mealFoodAmount"><button type="button" class="tinybtn" data-fraction="1/8">⅛</button><button type="button" class="tinybtn" data-fraction="1/4">¼</button><button type="button" class="tinybtn" data-fraction="1/3">⅓</button><button type="button" class="tinybtn" data-fraction="1/2">½</button><button type="button" class="tinybtn" data-fraction="2/3">⅔</button><button type="button" class="tinybtn" data-fraction="3/4">¾</button><button type="button" class="tinybtn" data-fraction="1">1</button><div class="fraction-buttons" aria-label="Add a fraction to the whole-number amount"><button type="button" class="tinybtn" data-mixed-fraction="1/8">+⅛</button><button type="button" class="tinybtn" data-mixed-fraction="1/4">+¼</button><button type="button" class="tinybtn" data-mixed-fraction="1/3">+⅓</button><button type="button" class="tinybtn" data-mixed-fraction="1/2">+½</button><button type="button" class="tinybtn" data-mixed-fraction="2/3">+⅔</button><button type="button" class="tinybtn" data-mixed-fraction="3/4">+¾</button></div></div>
 <button class="btn secondary" type="button" id="mealAddIngredient" style="margin-top:10px">Add ingredient</button><div id="mealDraftList" class="muted" style="margin-top:10px">No ingredients added yet.</div><div class="row between" style="margin-top:12px"><strong>Meal total</strong><strong id="mealDraftTotal">0 pts</strong></div><button class="btn" type="submit" style="margin-top:12px">Save meal</button></form><div id="savedMealsList" style="margin-top:14px"></div></div>
-<div class="card"><div id="savedList"></div></div>
+<div class="card"><h2>Your saved foods</h2><p class="muted">Your personal food list stays tucked away until you search for something.</p>
+<label for="savedFoodSearch">Search your saved foods</label><input id="savedFoodSearch" type="search" placeholder="Start typing a saved food…" autocomplete="off">
+<div id="savedList" class="saved-search-results" aria-live="polite"><div class="empty">Type a food name above to find it.</div></div></div>
 </section>
 <section id="weight" class="panel">
 <div class="panel-intro"><div class="section-kicker">PROGRESS</div><h2>Weight</h2><p>Record weigh-ins and follow your progress over time.</p></div>
@@ -201,7 +222,7 @@ input,select,textarea{scroll-margin-top:18px;scroll-margin-bottom:24px}
  <div class="portion-actions"><button type="button" class="btn" id="portionAdd">Add to today</button><button type="button" class="btn secondary" id="portionSave">Save food first</button></div>
  <p class="muted" style="margin-bottom:0;margin-top:12px">All common measures are available. For conversions between weight, volume, and item counts, enter the food-specific equivalent when prompted; density and item sizes vary by food.</p>
  </div></div>
-<div class="foot">My Points Tracker · <strong>Version 23</strong> · Data saved on this device.<br>Personal tracking tool, not affiliated with WeightWatchers. Point calculator is an estimate, not an official WeightWatchers calculator.</div>
+<div class="foot">My Points Tracker · <strong>Version 24</strong> · Data saved on this device.<br>Personal tracking tool, not affiliated with WeightWatchers. Point calculator is an estimate, not an official WeightWatchers calculator.</div>
 </main>
 <script src="https://unpkg.com/@zxing/browser@0.1.5/umd/zxing-browser.min.js"></script>
 <script>
@@ -326,6 +347,14 @@ function renderHistory(){
  const dates=[...new Set(data.logs.map(x=>x.date).filter(Boolean))].sort((a,b)=>b.localeCompare(a)).filter(d=>d!==date).slice(0,14);
  $('recentDays').innerHTML=dates.length?dates.map(d=>{const day=data.logs.filter(x=>x.date===d);const sum=day.reduce((n,x)=>n+Number(x.points||0),0);return `<div class="logrow"><div class="grow"><strong>${esc(d)}</strong><div class="muted">${day.length} food entr${day.length===1?'y':'ies'} · ${fmt(sum)} pts</div></div><button class="tinybtn" data-history-date="${esc(d)}">View day</button></div>`}).join(''):'<div class="empty">Your logged days will appear here.</div>';
 }
+function renderSavedFoodSearch(){
+ const input=$('savedFoodSearch'),list=$('savedList');
+ if(!input||!list)return;
+ const q=(input.value||'').trim().toLocaleLowerCase();
+ if(!q){list.innerHTML=data.foods.length?'<div class="empty">Type a food name above to find it.</div>':'<div class="empty">You have not saved any foods yet. Add one using the form above.</div>';return;}
+ const matches=data.foods.filter(f=>(String(f.name||'')+' '+String(f.serving||'')).toLocaleLowerCase().includes(q)).sort((a,b)=>a.name.localeCompare(b.name)).slice(0,60);
+ list.innerHTML=matches.length?matches.map(f=>`<div class="foodrow"><div class="grow"><strong>${esc(f.name)}</strong><div class="muted">${esc(f.serving||'Serving not specified')}</div></div><span class="points">${fmt(f.points)} pts</span><button class="tinybtn" data-use-food="${esc(f.id)}">Log</button><button class="tinybtn" data-delete-food="${esc(f.id)}" aria-label="Delete ${esc(f.name)}">×</button></div>`).join(''):'<div class="empty">No saved foods match that search.</div>';
+}
 function draw(){
 $('todayDate').textContent=new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
 $('weightDate').value=$('weightDate').value||today();
@@ -341,7 +370,7 @@ $('weeklyRemaining').style.color=week.remaining<0?'var(--red)':'var(--ink)';
 const logs=dayLogs();$('logList').innerHTML=logs.length?logs.slice().reverse().map(x=>`<div class="logrow"><div class="grow"><strong>${esc(logDisplayName(x))}</strong><div class="muted">${esc(logQty(x))}${logQty(x)?' · ':''}${esc(x.meal)} · ${esc(x.date)}</div></div><span class="points">${fmt(x.points)} pts</span><button class="tinybtn" data-edit-log="${esc(x.id)}" aria-label="Edit ${esc(x.name)}">Edit</button><button class="tinybtn" data-delete-log="${esc(x.id)}" aria-label="Delete ${esc(x.name)}">×</button></div>`).join(''):'<div class="empty">Nothing logged yet. Add your first food above.</div>';
 $('foodSelect').innerHTML='<option value="">Choose a saved food…</option>'+data.foods.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(f=>`<option value="${esc(f.id)}">${esc(f.name)} — ${fmt(f.points)} pts</option>`).join('');
 const acts=activitiesForDay(today()),actTotal=acts.reduce((sum,a)=>sum+n(a.points),0);$('activityToday').textContent=fmt(actTotal);$('availableToday').textContent=fmt(allowance+actTotal);$('activityList').innerHTML=acts.length?acts.slice().reverse().map(a=>`<div class="logrow"><div class="grow"><strong>${esc(a.type)}</strong><div class="muted">${esc(a.minutes)} min · ${esc(a.effort)} effort · ${esc(a.date)}</div></div><span class="points">+${fmt(a.points)} pts</span><button class="tinybtn" data-delete-activity="${esc(a.id)}" aria-label="Delete ${esc(a.type)}">×</button></div>`).join(''):'<div class="empty">No activity logged today yet.</div>';
-refreshMealFoodSelect();renderSavedMeals();$('savedList').innerHTML=data.foods.length?data.foods.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(f=>`<div class="foodrow"><div class="grow"><strong>${esc(f.name)}</strong><div class="muted">${esc(f.serving||'Serving not specified')}</div></div><span class="points">${fmt(f.points)} pts</span><button class="tinybtn" data-use-food="${esc(f.id)}">Log</button><button class="tinybtn" data-delete-food="${esc(f.id)}">×</button></div>`).join(''):'<div class="empty">No saved foods yet.</div>';
+refreshMealFoodSelect();renderSavedMeals();renderSavedFoodSearch();
 drawLibrary();
 renderHistory();
 $('allowance').value=data.settings.allowance||'';$('startWeight').value=data.settings.startWeight||'';$('goalWeight').value=data.settings.goalWeight||'';
@@ -392,7 +421,7 @@ $('logForm').addEventListener('submit',e=>{e.preventDefault();const name=$('food
 function logSaved(id){const f=data.foods.find(x=>x.id===id);if(f)addLog(f.name,f.points,'Other')}
 $('addSaved').addEventListener('click',()=>{if(!$('foodSelect').value){alert('Choose a saved food first.');return}const f=data.foods.find(x=>x.id===$('foodSelect').value);if(f)openPortion({kind:'saved',name:f.name,points:n(f.points),serving:f.serving||'1 serving',conversions:f.conversions||{}})});
 $('portionClose').addEventListener('click',closePortion);$('portionAmount').addEventListener('input',updatePortion);$('portionUnit').addEventListener('change',()=>{if(portionTarget&&portionTarget.conversions&&portionTarget.conversions[$('portionUnit').value])$('portionConversion').value=portionTarget.conversions[$('portionUnit').value];else $('portionConversion').value='';updatePortion()});$('portionConversion').addEventListener('input',updatePortion);$('portionMeal').addEventListener('change',updatePortion);$('portionAdd').addEventListener('click',()=>{if(!portionTarget)return;if(!$('portionMeal').value){alert('Choose Breakfast, Lunch, Dinner, or Snack first.');return}const pts=$('portionOverlay').dataset.points;if(pts==='')return;const unit=$('portionUnit').value,cv=n($('portionConversion').value);if(cv>0){portionTarget.conversions={...(portionTarget.conversions||{}),[unit]:cv};const saved=data.foods.find(x=>x.name.toLowerCase()===portionTarget.name.toLowerCase());if(saved){saved.conversions={...(saved.conversions||{}),[unit]:cv};save()}}const label=$('portionUnit').selectedOptions[0].textContent;const amount=parseAmount($('portionAmount').value);const qty=fmt(amount)+' '+label;addLog(portionTarget.name+' ('+qty+')',n(pts),$('portionMeal').value,{amount:amount,unit:unit,basePoints:n(portionTarget.points),factor:n($('portionOverlay').dataset.factor),serving:portionTarget.serving||'1 serving'});closePortion()});$('portionSave').addEventListener('click',savePortionFood);$('portionOverlay').addEventListener('click',e=>{if(e.target===$('portionOverlay'))closePortion()});
-$('librarySearch').addEventListener('input',drawLibrary);
+$('librarySearch').addEventListener('input',drawLibrary);$('savedFoodSearch').addEventListener('input',renderSavedFoodSearch);
 $('saveFoodFromLog').addEventListener('click',()=>{const name=$('foodName').value.trim(),points=$('foodPoints').value;if(!name||points===''){alert('Enter a food name and points first.');return}data.foods.push({id:String(Date.now()),name,points:n(points),serving:fmt(parseAmount($('manualServingQty').value)||1)+' '+$('manualServingUnit').value});save();draw();alert('Food saved. Now tap “Add to today’s log” if you also want to log it today.')});
 $('savedForm').addEventListener('submit',e=>{e.preventDefault();data.foods.push({id:String(Date.now()+Math.random()),name:$('savedName').value.trim(),points:n($('savedPoints').value),serving:fmt(parseAmount($('savedServingQty').value)||1)+' '+$('savedServingUnit').value});save();e.target.reset();draw()});
 $('activityMinutes').addEventListener('input',updateActivityEstimate);$('activityEffort').addEventListener('change',updateActivityEstimate);$('activityForm').addEventListener('submit',e=>{e.preventDefault();const minutes=Math.floor(n($('activityMinutes').value));if(minutes<1){alert('Enter an activity duration of at least 1 minute.');return}const effort=$('activityEffort').value,points=estimateActivityPoints(minutes,effort);if(points<=0){alert('Enter a duration to calculate activity points.');return}if(!Array.isArray(data.activities))data.activities=[];if(!Array.isArray(data.meals))data.meals=[];data.activities.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random()),date:today(),type:$('activityType').value,minutes,effort,points});save();draw();$('activityMinutes').value='';updateActivityEstimate();});
@@ -516,7 +545,7 @@ draw();
 // Offline support is available when this app is hosted over HTTPS (for example, GitHub Pages).
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js?v=23', { updateViaCache: 'none' }).catch(err => console.warn('Offline setup could not be enabled:', err));
+    navigator.serviceWorker.register('./sw.js?v=24', { updateViaCache: 'none' }).catch(err => console.warn('Offline setup could not be enabled:', err));
   });
 }
 </script>
