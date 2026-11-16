@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#173b35">
-<meta name="app-version" content="24">
+<meta name="app-version" content="25">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="My Points">
@@ -101,6 +101,9 @@ input,select,textarea{scroll-margin-top:18px;scroll-margin-bottom:24px}
 .saved-search-results .foodrow{gap:8px}
 .saved-search-results .points{font-size:14px}
 @media(max-width:360px){.tabs{grid-auto-columns:104px}.tabs button,.tabs button[data-tab="settings"]{width:104px;font-size:11px}.saved-search-results .foodrow{gap:6px}.saved-search-results .tinybtn{padding:6px 7px}}
+/* Version 25: clear the inherited fractional column template so fixed-width carousel tracks cannot overlap. */
+.tabs{grid-template-columns:none;grid-template-rows:repeat(2,40px);grid-auto-columns:112px;align-items:stretch}
+@media(max-width:360px){.tabs{grid-auto-columns:104px}}
 
 </style>
 </head>
@@ -222,7 +225,7 @@ input,select,textarea{scroll-margin-top:18px;scroll-margin-bottom:24px}
  <div class="portion-actions"><button type="button" class="btn" id="portionAdd">Add to today</button><button type="button" class="btn secondary" id="portionSave">Save food first</button></div>
  <p class="muted" style="margin-bottom:0;margin-top:12px">All common measures are available. For conversions between weight, volume, and item counts, enter the food-specific equivalent when prompted; density and item sizes vary by food.</p>
  </div></div>
-<div class="foot">My Points Tracker · <strong>Version 24</strong> · Data saved on this device.<br>Personal tracking tool, not affiliated with WeightWatchers. Point calculator is an estimate, not an official WeightWatchers calculator.</div>
+<div class="foot">My Points Tracker · <strong>Version 25</strong> · Data saved on this device.<br>Personal tracking tool, not affiliated with WeightWatchers. Point calculator is an estimate, not an official WeightWatchers calculator.</div>
 </main>
 <script src="https://unpkg.com/@zxing/browser@0.1.5/umd/zxing-browser.min.js"></script>
 <script>
@@ -545,7 +548,7 @@ draw();
 // Offline support is available when this app is hosted over HTTPS (for example, GitHub Pages).
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js?v=24', { updateViaCache: 'none' }).catch(err => console.warn('Offline setup could not be enabled:', err));
+    navigator.serviceWorker.register('./sw.js?v=25', { updateViaCache: 'none' }).catch(err => console.warn('Offline setup could not be enabled:', err));
   });
 }
 </script>
