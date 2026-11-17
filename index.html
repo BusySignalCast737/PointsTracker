@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#24558a">
-<meta name="app-version" content="29">
+<meta name="app-version" content="30">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="My Points">
@@ -146,6 +146,7 @@ input:focus,select:focus,textarea:focus{outline-color:#91b5df;border-color:#4779
 #restaurants a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
 
 /* Version 29: explicit two-row navigation positions and separated food lookups */
+/* Version 30: stack weight date and weight fields on narrow screens to prevent native date-input overlap */
 .tabs{grid-template-rows:repeat(2,40px);grid-auto-columns:112px;grid-auto-rows:40px;grid-auto-flow:column;align-items:stretch;}
 .tabs button{width:112px;min-width:112px;height:40px;min-height:40px;max-width:112px;overflow-wrap:anywhere;}
 .tabs button:nth-child(1){grid-column:1;grid-row:1}
@@ -162,6 +163,7 @@ input:focus,select:focus,textarea:focus{outline-color:#91b5df;border-color:#4779
 #weightForm .formgrid>div{min-width:0}
 #weightForm>button{display:block;width:100%;position:relative;clear:both;margin-top:12px}
 #weightForm input{min-width:0;max-width:100%}
+@media(max-width:520px){#weightForm .formgrid{grid-template-columns:minmax(0,1fr)}#weightForm .formgrid>div{grid-column:1/-1;width:100%;min-width:0}#weightForm input[type="date"],#weightForm input[type="number"]{display:block;width:100%;min-width:0;max-width:100%}}
 #brandResults .restaurant-result{padding:13px 0;border-bottom:1px solid var(--line)}
 #brandResults .restaurant-result:last-child{border-bottom:0}
 #brandResults .restaurant-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
@@ -319,7 +321,7 @@ input:focus,select:focus,textarea:focus{outline-color:#91b5df;border-color:#4779
  <div class="portion-actions"><button type="button" class="btn" id="portionAdd">Add to selected date</button><button type="button" class="btn secondary" id="portionSave">Save food first</button></div>
  <p class="muted" style="margin-bottom:0;margin-top:12px">All common measures are available. For conversions between weight, volume, and item counts, enter the food-specific equivalent when prompted; density and item sizes vary by food.</p>
  </div></div>
-<div class="foot">My Points Tracker · <strong>Version 29</strong> · Data saved on this device.<br>Personal tracking tool, not affiliated with WeightWatchers. Point calculator is an estimate, not an official WeightWatchers calculator.</div>
+<div class="foot">My Points Tracker · <strong>Version 30</strong> · Data saved on this device.<br>Personal tracking tool, not affiliated with WeightWatchers. Point calculator is an estimate, not an official WeightWatchers calculator.</div>
 </main>
 <script src="https://unpkg.com/@zxing/browser@0.1.5/umd/zxing-browser.min.js"></script>
 <script>
@@ -739,7 +741,7 @@ document.querySelectorAll('input[type="search"]').forEach(input=>{
 
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js?v=29', { updateViaCache: 'none' }).catch(err => console.warn('Offline setup could not be enabled:', err));
+    navigator.serviceWorker.register('./sw.js?v=30', { updateViaCache: 'none' }).catch(err => console.warn('Offline setup could not be enabled:', err));
   });
 }
 </script>
