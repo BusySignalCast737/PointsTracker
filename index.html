@@ -103,7 +103,7 @@ input,select,textarea{scroll-margin-top:18px;scroll-margin-bottom:24px}
 @media(max-width:360px){.tabs{grid-auto-columns:104px}.tabs button,.tabs button[data-tab="settings"]{width:104px;font-size:11px}.saved-search-results .foodrow{gap:6px}.saved-search-results .tinybtn{padding:6px 7px}}
 
 
-/* Version 26: date selection, searchable saved lists, and blue theme */
+/* Version 27: date selection, searchable saved lists, and blue theme */
 :root{--ink:#1d2c3c;--muted:#657589;--green:#24558a;--mint:#e7f0fb;--paper:#f4f7fb;--card:#fff;--line:#dce5ef;--soft:#f7faff}
 header{background:#24558a}
 .btn{background:#24558a}
@@ -115,6 +115,26 @@ input:focus,select:focus,textarea:focus{outline-color:#91b5df;border-color:#4779
 .portion-result{background:#edf4fc}
 #weeklyCard{background:linear-gradient(145deg,#fff 0%,#f7faff 100%)}
 .saved-search-results,.saved-meal-results{max-height:360px;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+
+/* Version 27: clearer navigation order, collapsible history, and one-tap search clearing */
+.tabs button:nth-child(1){grid-column:1;grid-row:1}
+.tabs button:nth-child(2){grid-column:2;grid-row:1}
+.tabs button:nth-child(3){grid-column:1;grid-row:2}
+.tabs button:nth-child(4){grid-column:2;grid-row:2}
+.tabs button:nth-child(5){grid-column:3;grid-row:1}
+.tabs button:nth-child(6){grid-column:3;grid-row:2}
+.tabs button:nth-child(7){grid-column:4;grid-row:1}
+.search-wrap{position:relative;display:flex;align-items:center;width:100%}
+.search-wrap input{width:100%;padding-right:42px}
+.search-clear{position:absolute;right:7px;top:50%;transform:translateY(-50%);width:29px;height:29px;border:0;border-radius:50%;background:var(--mint);color:var(--green);font-size:20px;line-height:1;display:none;align-items:center;justify-content:center;padding:0;z-index:2}
+.search-wrap.has-value .search-clear{display:flex}
+.history-day{border:1px solid var(--line);border-radius:11px;padding:11px 12px;margin:8px 0;background:var(--card)}
+.history-day summary{cursor:pointer;font-weight:650;list-style:none}
+.history-day summary::-webkit-details-marker{display:none}
+.history-day summary:after{content:'＋';float:right;color:var(--green)}
+.history-day[open] summary:after{content:'−'}
+.history-day .logrow{margin-top:9px}
+
 </style>
 </head>
 <body>
@@ -124,8 +144,8 @@ input:focus,select:focus,textarea:focus{outline-color:#91b5df;border-color:#4779
  <nav class="tabs" role="tablist" aria-label="Tracker sections">
   <button class="active" role="tab" aria-selected="true" aria-controls="today" data-tab="today">Today</button>
   <button role="tab" aria-selected="false" aria-controls="weight" data-tab="weight">Weight</button>
-  <button role="tab" aria-selected="false" aria-controls="foods" data-tab="foods">Saved foods</button>
   <button role="tab" aria-selected="false" aria-controls="addfood" data-tab="addfood">Add food</button>
+  <button role="tab" aria-selected="false" aria-controls="foods" data-tab="foods">Saved foods</button>
   <button role="tab" aria-selected="false" aria-controls="activity" data-tab="activity">Activity</button>
   <button role="tab" aria-selected="false" aria-controls="history" data-tab="history">History</button>
   <button role="tab" aria-selected="false" aria-controls="settings" data-tab="settings">Settings</button>
@@ -226,7 +246,7 @@ input:focus,select:focus,textarea:focus{outline-color:#91b5df;border-color:#4779
 <div class="card"><h2>Backup & restore</h2><p class="muted">Export a complete JSON backup to keep your settings, foods, food logs, activity logs, and weigh-ins. CSV exports are also available for spreadsheets.</p><div class="row" style="flex-wrap:wrap"><button class="btn" id="exportJson">Export full backup (JSON)</button><button class="btn secondary" id="exportCsv">Export tables (CSV)</button></div><label for="importFile">Restore a JSON backup</label><input id="importFile" type="file" accept=".json,application/json"><p class="muted">Restoring replaces the data currently stored in this tracker on this device.</p></div>
 <div class="card"><h2>Offline & privacy</h2><p class="muted">This single-file version stores data locally in your browser on this device and does not send it to a server. Open it once while online or save it to Files and open it in a browser, then test it in Airplane Mode. Browser file-opening behavior varies; for dependable offline use, the next step is hosting it as an installable web app (PWA) and adding it to your Home Screen.</p><div class="notice">Keep regular backups. Clearing browser data, deleting the saved file, or changing browsers can make locally stored data unavailable.</div><button class="btn danger" id="clearData" style="margin-top:12px">Erase all tracker data</button></div>
 </section>
-<div class="portion-overlay hidden" id="editLogOverlay"><div class="portion-box"><div class="row between"><h2>Edit logged food</h2><button class="tinybtn" type="button" id="editLogClose">Close</button></div><p class="muted">Change the amount or points. Your daily and weekly totals will update when you save.</p><form id="editLogForm"><label for="editLogName">Food name</label><input id="editLogName" required><div class="formgrid"><div><label for="editLogAmount">Amount / servings</label><input id="editLogAmount" type="text" inputmode="decimal" required placeholder="1/2 or 0.25"></div><div><label for="editLogPoints">Points for this entry</label><input id="editLogPoints" type="number" min="0" max="999" step="0.5" required></div><div class="full"><div class="fraction-buttons" data-fraction-target="editLogAmount"><button type="button" class="tinybtn" data-fraction="1/8">⅛</button><button type="button" class="tinybtn" data-fraction="1/4">¼</button><button type="button" class="tinybtn" data-fraction="1/3">⅓</button><button type="button" class="tinybtn" data-fraction="1/2">½</button><button type="button" class="tinybtn" data-fraction="2/3">⅔</button><button type="button" class="tinybtn" data-fraction="3/4">¾</button><button type="button" class="tinybtn" data-fraction="1">1</button><div class="fraction-buttons" aria-label="Add a fraction to the whole-number amount"><button type="button" class="tinybtn" data-mixed-fraction="1/8">+⅛</button><button type="button" class="tinybtn" data-mixed-fraction="1/4">+¼</button><button type="button" class="tinybtn" data-mixed-fraction="1/3">+⅓</button><button type="button" class="tinybtn" data-mixed-fraction="1/2">+½</button><button type="button" class="tinybtn" data-mixed-fraction="2/3">+⅔</button><button type="button" class="tinybtn" data-mixed-fraction="3/4">+¾</button></div></div><label for="editLogMeal">Meal</label><select id="editLogMeal"><option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Snack</option><option>Other</option></select></div></div><div class="muted" id="editLogHint" style="margin-top:8px">Adjust the amount and points as needed.</div><div class="portion-actions" style="margin-top:14px"><button class="btn" type="submit">Save changes</button><button class="btn secondary" type="button" id="editLogCancel">Cancel</button></div></form></div></div>
+<div class="portion-overlay hidden" id="editLogOverlay"><div class="portion-box"><div class="row between"><h2>Edit logged food</h2><button class="tinybtn" type="button" id="editLogClose">Close</button></div><p class="muted">Change the amount or points. Your daily and weekly totals will update when you save.</p><form id="editLogForm"><label for="editLogName">Food name</label><input id="editLogName" required><div class="formgrid"><div><label for="editLogAmount">Amount / servings</label><input id="editLogAmount" type="text" inputmode="decimal" required placeholder="1/2 or 0.25"></div><div><label for="editLogPoints">Points for this entry</label><input id="editLogPoints" type="number" min="0" max="999" step="0.5" required></div><div class="full"><div class="fraction-buttons" data-fraction-target="editLogAmount"><button type="button" class="tinybtn" data-fraction="1/8">⅛</button><button type="button" class="tinybtn" data-fraction="1/4">¼</button><button type="button" class="tinybtn" data-fraction="1/3">⅓</button><button type="button" class="tinybtn" data-fraction="1/2">½</button><button type="button" class="tinybtn" data-fraction="2/3">⅔</button><button type="button" class="tinybtn" data-fraction="3/4">¾</button><button type="button" class="tinybtn" data-fraction="1">1</button><div class="fraction-buttons" aria-label="Add a fraction to the whole-number amount"><button type="button" class="tinybtn" data-mixed-fraction="1/8">+⅛</button><button type="button" class="tinybtn" data-mixed-fraction="1/4">+¼</button><button type="button" class="tinybtn" data-mixed-fraction="1/3">+⅓</button><button type="button" class="tinybtn" data-mixed-fraction="1/2">+½</button><button type="button" class="tinybtn" data-mixed-fraction="2/3">+⅔</button><button type="button" class="tinybtn" data-mixed-fraction="3/4">+¾</button></div></div><label for="editLogMeal">Meal</label><select id="editLogMeal"><option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Snack</option><option>Other</option></select></div></div><div class="muted" id="editLogHint" style="margin-top:8px">Adjust the amount and points as needed.</div><label class="row" style="justify-content:flex-start;gap:9px;margin-top:12px"><input id="editLogAlsoTomorrow" type="checkbox" style="width:auto;min-height:0"> Also add this food to tomorrow’s log</label><div class="portion-actions" style="margin-top:14px"><button class="btn" type="submit">Save changes</button><button class="btn secondary" type="button" id="editLogCancel">Cancel</button></div></form></div></div>
 <div id="portionOverlay" class="portion-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="portionTitle">
  <div class="portion-box"><div class="row between"><div><h2 id="portionTitle">Log a serving</h2><div id="portionFoodName" class="muted"></div></div><button type="button" class="tinybtn" id="portionClose" aria-label="Close">✕</button></div>
  <p class="muted" id="portionBaseInfo"></p>
@@ -235,7 +255,7 @@ input:focus,select:focus,textarea:focus{outline-color:#91b5df;border-color:#4779
  <div class="portion-actions"><button type="button" class="btn" id="portionAdd">Add to selected date</button><button type="button" class="btn secondary" id="portionSave">Save food first</button></div>
  <p class="muted" style="margin-bottom:0;margin-top:12px">All common measures are available. For conversions between weight, volume, and item counts, enter the food-specific equivalent when prompted; density and item sizes vary by food.</p>
  </div></div>
-<div class="foot">My Points Tracker · <strong>Version 26</strong> · Data saved on this device.<br>Personal tracking tool, not affiliated with WeightWatchers. Point calculator is an estimate, not an official WeightWatchers calculator.</div>
+<div class="foot">My Points Tracker · <strong>Version 27</strong> · Data saved on this device.<br>Personal tracking tool, not affiliated with WeightWatchers. Point calculator is an estimate, not an official WeightWatchers calculator.</div>
 </main>
 <script src="https://unpkg.com/@zxing/browser@0.1.5/umd/zxing-browser.min.js"></script>
 <script>
@@ -351,14 +371,14 @@ function weeklyUsage(){const start=mondayOfWeek(today());let used=0;for(let i=0;
 function estimateActivityPoints(minutes,effort){const rate={light:0.5,moderate:1,vigorous:1.5}[effort]||1;return Math.max(0,Math.round((n(minutes)/15*rate)*2)/2)}
 function updateActivityEstimate(){const mins=n($('activityMinutes').value),effort=$('activityEffort').value,pts=mins>0?estimateActivityPoints(mins,effort):0;$('activityEstimate').textContent=fmt(pts);$('activityRate').textContent=(mins||0)+' min at '+effort+' effort · '+({light:'0.5',moderate:'1',vigorous:'1.5'}[effort])+' point(s) per 15 min';}
 function renderHistory(){
- const dateInput=$('historyDate'); if(!dateInput.value) dateInput.value=today();
+ const dateInput=$('historyDate'); if(!dateInput.value) dateInput.value=addDays(today(),-1);
  const date=dateInput.value||today();
  const logs=data.logs.filter(x=>x.date===date).slice().reverse();
  $('historyTotal').textContent=fmt(logs.reduce((sum,x)=>sum+n(x.points),0));
  $('historyCount').textContent=String(logs.length);
  $('historyList').innerHTML=logs.length?logs.map(x=>`<div class="logrow"><div class="grow"><strong>${esc(logDisplayName(x))}</strong><div class="muted">${esc(logQty(x))}${logQty(x)?' · ':''}${esc(x.meal||'Other')} · ${fmt(x.points)} pts · ${esc(x.date)}${x.date>today()?' · Planned':''}</div></div><button class="tinybtn" data-edit-log="${esc(x.id)}">Edit</button><button class="tinybtn" data-copy-to-today="${esc(x.id)}">Add to today</button></div>`).join(''):'<div class="empty">No food entries for this date.</div>';
- const dates=[...new Set(data.logs.map(x=>x.date).filter(Boolean))].sort((a,b)=>b.localeCompare(a)).filter(d=>d!==date).slice(0,14);
- $('recentDays').innerHTML=dates.length?dates.map(d=>{const day=data.logs.filter(x=>x.date===d);const sum=day.reduce((n,x)=>n+Number(x.points||0),0);return `<div class="logrow"><div class="grow"><strong>${esc(d)}</strong><div class="muted">${day.length} food entr${day.length===1?'y':'ies'} · ${fmt(sum)} pts</div></div><button class="tinybtn" data-history-date="${esc(d)}">View day</button></div>`}).join(''):'<div class="empty">Your logged days will appear here.</div>';
+ const dates=[...new Set(data.logs.map(x=>x.date).filter(Boolean))].sort((a,b)=>b.localeCompare(a)).filter(d=>d!==date&&d!==today()).slice(0,14);
+ $('recentDays').innerHTML=dates.length?dates.map(d=>{const day=data.logs.filter(x=>x.date===d).slice().reverse();const sum=day.reduce((n,x)=>n+Number(x.points||0),0);return `<details class="history-day"><summary>${esc(d)} · ${day.length} entr${day.length===1?'y':'ies'} · ${fmt(sum)} pts</summary>${day.map(x=>`<div class="logrow"><div class="grow"><strong>${esc(logDisplayName(x))}</strong><div class="muted">${esc(logQty(x))}${logQty(x)?' · ':''}${esc(x.meal||'Other')} · ${fmt(x.points)} pts</div></div><button class="tinybtn" data-edit-log="${esc(x.id)}">Edit</button><button class="tinybtn" data-copy-to-today="${esc(x.id)}">Add to today</button></div>`).join('')}</details>`}).join(''):'<div class="empty">Your previous logged days will appear here.</div>';
 }
 function renderQuickSavedFoodSearch(){const input=$('quickSavedFoodSearch'),list=$('quickSavedFoodResults');if(!input||!list)return;const q=(input.value||'').trim().toLocaleLowerCase();if(!q){list.innerHTML=data.foods.length?'<div class=\"empty\">Type a name to find one of your saved foods.</div>':'<div class=\"empty\">You have not saved any foods yet.</div>';return;}const matches=data.foods.filter(f=>(String(f.name||'')+' '+String(f.serving||'')).toLocaleLowerCase().includes(q)).sort((a,b)=>a.name.localeCompare(b.name)).slice(0,50);list.innerHTML=matches.length?matches.map(f=>`<div class=\"foodrow\"><div class=\"grow\"><strong>${esc(f.name)}</strong><div class=\"muted\">${esc(f.serving||'Serving not specified')}</div></div><span class=\"points\">${fmt(f.points)} pts</span><button class=\"tinybtn\" data-use-food=\"${esc(f.id)}\">Log</button></div>`).join(''):'<div class=\"empty\">No saved foods match that search.</div>';}
 function renderSavedFoodSearch(){
@@ -445,10 +465,10 @@ $('calcForm').addEventListener('input',()=>{const cal=n($('calories').value),fat
 $('calcForm').addEventListener('submit',e=>{e.preventDefault();const basePoints=$('calcForm').dataset.basePoints;if(basePoints===''){alert('Enter calories, fat, and fiber first.');return}const name=$('calcName').value.trim()||'Calculated food';const serving=fmt(parseAmount($('calcServingQty').value)||1)+' '+$('calcServingUnit').value;const existing=data.foods.find(f=>f.name.toLowerCase()===name.toLowerCase());if(existing){existing.points=n(basePoints);existing.serving=serving}else data.foods.push({id:String(Date.now()+Math.random()),name,points:n(basePoints),serving});save();draw();openPortion({kind:'saved',name,points:n(basePoints),serving});$('portionAmount').value=$('servings').value||'1';$('portionUnit').value=$('calcServingUnit').value;updatePortion();});
 document.addEventListener('click',e=>{const t=e.target;if(t.dataset.editLog){openEditLog(t.dataset.editLog)}if(t.dataset.copyToToday){const original=data.logs.find(x=>x.id===t.dataset.copyToToday);if(original){data.logs.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random()),date:today(),name:original.name,points:n(original.points),meal:original.meal||'Other',copiedFromDate:original.date});save();draw();alert('Added to today. The original past-day entry is unchanged.')}}if(t.dataset.historyDate){$('historyDate').value=t.dataset.historyDate;renderHistory()}if(t.dataset.deleteLog){data.logs=data.logs.filter(x=>x.id!==t.dataset.deleteLog);save();draw()}if(t.dataset.deleteFood){if(confirm('Delete this saved food? Existing food logs will remain.')){data.foods=data.foods.filter(x=>x.id!==t.dataset.deleteFood);save();draw()}}if(t.dataset.useFood){const f=data.foods.find(x=>x.id===t.dataset.useFood);if(f)openPortion({kind:'saved',name:f.name,points:n(f.points),serving:f.serving||'1 serving',conversions:f.conversions||{}})}if(t.dataset.libraryLog!==undefined){const f=LIBRARY[Number(t.dataset.libraryLog)];if(f)openPortion({kind:'library',name:f[0],serving:f[1],points:classicPoints(f[2],f[3],f[4])})}if(t.dataset.librarySave!==undefined){const f=LIBRARY[Number(t.dataset.librarySave)];if(f){const name=f[0],points=classicPoints(f[2],f[3],f[4]);const existing=data.foods.find(x=>x.name.toLowerCase()===name.toLowerCase());if(existing){if(confirm(name+' is already in your saved foods. Update its points and serving?')){existing.points=points;existing.serving=f[1]}}else data.foods.push({id:String(Date.now()+Math.random()),name,points,serving:f[1]});save();draw();}}if(t.dataset.deleteWeight){data.weights=data.weights.filter(x=>x.id!==t.dataset.deleteWeight);save();draw()}if(t.dataset.deleteActivity){data.activities=(data.activities||[]).filter(x=>x.id!==t.dataset.deleteActivity);save();draw()}});
 let editingLogId=null;
-function openEditLog(id){const item=data.logs.find(x=>x.id===id);if(!item)return;editingLogId=id;$('editLogName').value=logDisplayName(item);$('editLogAmount').value=item.amount!=null?String(item.amount):'1';$('editLogPoints').value=n(item.points);$('editLogMeal').value=item.meal||'Other';$('editLogOverlay').dataset.pointsPerAmount=String(n(item.points)/(n(item.amount)||1));$('editLogHint').textContent='Change the amount and the points will scale proportionally from this entry. You can also override the points manually.';$('editLogOverlay').classList.remove('hidden')}
+function openEditLog(id){const item=data.logs.find(x=>x.id===id);if(!item)return;editingLogId=id;$('editLogName').value=logDisplayName(item);$('editLogAmount').value=item.amount!=null?String(item.amount):'1';$('editLogPoints').value=n(item.points);$('editLogMeal').value=item.meal||'Other';$('editLogAlsoTomorrow').checked=false;$('editLogOverlay').dataset.pointsPerAmount=String(n(item.points)/(n(item.amount)||1));$('editLogHint').textContent='Change the amount and the points will scale proportionally from this entry. You can also override the points manually.';$('editLogOverlay').classList.remove('hidden')}
 function closeEditLog(){$('editLogOverlay').classList.add('hidden');editingLogId=null}
 $('editLogClose').addEventListener('click',closeEditLog);$('editLogCancel').addEventListener('click',closeEditLog);$('editLogAmount').addEventListener('input',()=>{const amount=parseAmount($('editLogAmount').value),rate=n($('editLogOverlay').dataset.pointsPerAmount);if(amount>0)$('editLogPoints').value=String(Math.round(rate*amount*2)/2)});
-$('editLogForm').addEventListener('submit',e=>{e.preventDefault();const item=data.logs.find(x=>x.id===editingLogId);if(!item)return;const amount=parseAmount($('editLogAmount').value),points=n($('editLogPoints').value);if(amount<=0||points<0){alert('Enter a valid amount and points.');return}item.name=$('editLogName').value.trim();item.amount=amount;item.points=points;item.meal=$('editLogMeal').value;save();draw();closeEditLog()});
+$('editLogForm').addEventListener('submit',e=>{e.preventDefault();const item=data.logs.find(x=>x.id===editingLogId);if(!item)return;const amount=parseAmount($('editLogAmount').value),points=n($('editLogPoints').value);if(amount<=0||points<0){alert('Enter a valid amount and points.');return}item.name=$('editLogName').value.trim();item.amount=amount;item.points=points;item.meal=$('editLogMeal').value;if($('editLogAlsoTomorrow').checked){const copy={...item,id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random()),date:addDays(item.date||today(),1),copiedFromDate:item.date||today()};data.logs.push(copy)}save();draw();closeEditLog()});
 
 // Compact fraction dropdowns: keeps fraction choices available without crowding the iPhone layout.
 const FRACTION_CHOICES=[['1/8','⅛'],['1/4','¼'],['1/3','⅓'],['3/8','⅜'],['1/2','½'],['5/8','⅝'],['2/3','⅔'],['3/4','¾'],['7/8','⅞']];
@@ -558,9 +578,17 @@ draw();
 </script>
 <script>
 // Offline support is available when this app is hosted over HTTPS (for example, GitHub Pages).
+// Add a one-tap clear control to every search field; retain each field's existing filtering behavior.
+document.querySelectorAll('input[type="search"]').forEach(input=>{
+ const wrap=document.createElement('div');wrap.className='search-wrap';input.parentNode.insertBefore(wrap,input);wrap.appendChild(input);
+ const clear=document.createElement('button');clear.type='button';clear.className='search-clear';clear.textContent='×';clear.setAttribute('aria-label','Clear search');wrap.appendChild(clear);
+ const sync=()=>wrap.classList.toggle('has-value',!!input.value);
+ input.addEventListener('input',sync);clear.addEventListener('click',()=>{input.value='';input.dispatchEvent(new Event('input',{bubbles:true}));input.focus();sync()});sync();
+});
+
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js?v=25', { updateViaCache: 'none' }).catch(err => console.warn('Offline setup could not be enabled:', err));
+    navigator.serviceWorker.register('./sw.js?v=27', { updateViaCache: 'none' }).catch(err => console.warn('Offline setup could not be enabled:', err));
   });
 }
 </script>
