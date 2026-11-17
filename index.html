@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#24558a">
-<meta name="app-version" content="28">
+<meta name="app-version" content="29">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="My Points">
@@ -144,6 +144,30 @@ input:focus,select:focus,textarea:focus{outline-color:#91b5df;border-color:#4779
 #restaurantResults .restaurant-meta{font-size:12px;color:var(--muted);margin-top:3px}
 #restaurantResults .restaurant-points{font-size:19px;font-weight:850;color:var(--green);white-space:nowrap}
 #restaurants a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+
+/* Version 29: explicit two-row navigation positions and separated food lookups */
+.tabs{grid-template-rows:repeat(2,40px);grid-auto-columns:112px;grid-auto-rows:40px;grid-auto-flow:column;align-items:stretch;}
+.tabs button{width:112px;min-width:112px;height:40px;min-height:40px;max-width:112px;overflow-wrap:anywhere;}
+.tabs button:nth-child(1){grid-column:1;grid-row:1}
+.tabs button:nth-child(2){grid-column:2;grid-row:1}
+.tabs button:nth-child(3){grid-column:1;grid-row:2}
+.tabs button:nth-child(4){grid-column:2;grid-row:2}
+/* Restaurant Foods takes Activity's former position; Activity moves one column right. */
+.tabs button:nth-child(5){grid-column:3;grid-row:1}
+.tabs button:nth-child(6){grid-column:3;grid-row:2}
+.tabs button:nth-child(7){grid-column:4;grid-row:1}
+.tabs button:nth-child(8){grid-column:4;grid-row:2}
+.tabs button:nth-child(9){grid-column:5;grid-row:2}
+.tabs button[data-tab="settings"]{grid-column:5;grid-row:2;width:112px;min-width:112px}
+#weightForm .formgrid>div{min-width:0}
+#weightForm>button{display:block;width:100%;position:relative;clear:both;margin-top:12px}
+#weightForm input{min-width:0;max-width:100%}
+#brandResults .restaurant-result{padding:13px 0;border-bottom:1px solid var(--line)}
+#brandResults .restaurant-result:last-child{border-bottom:0}
+#brandResults .restaurant-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+#brandResults .restaurant-meta{font-size:12px;color:var(--muted);margin-top:3px}
+#brandResults .restaurant-points{font-size:19px;font-weight:850;color:var(--green);white-space:nowrap}
+@media(max-width:360px){.tabs{grid-auto-columns:104px}.tabs button,.tabs button[data-tab="settings"]{width:104px;min-width:104px;max-width:104px;font-size:11px}}
 </style>
 </head>
 <body>
@@ -155,9 +179,10 @@ input:focus,select:focus,textarea:focus{outline-color:#91b5df;border-color:#4779
   <button role="tab" aria-selected="false" aria-controls="weight" data-tab="weight">Weight</button>
   <button role="tab" aria-selected="false" aria-controls="addfood" data-tab="addfood">Add food</button>
   <button role="tab" aria-selected="false" aria-controls="foods" data-tab="foods">Saved foods</button>
-  <button role="tab" aria-selected="false" aria-controls="activity" data-tab="activity">Activity</button>
-  <button role="tab" aria-selected="false" aria-controls="history" data-tab="history">History</button>
   <button role="tab" aria-selected="false" aria-controls="restaurants" data-tab="restaurants">Restaurant foods</button>
+  <button role="tab" aria-selected="false" aria-controls="history" data-tab="history">History</button>
+  <button role="tab" aria-selected="false" aria-controls="activity" data-tab="activity">Activity</button>
+  <button role="tab" aria-selected="false" aria-controls="brands" data-tab="brands">Brands</button>
   <button role="tab" aria-selected="false" aria-controls="settings" data-tab="settings">Settings</button>
  </nav>
 </div>
@@ -254,7 +279,7 @@ input:focus,select:focus,textarea:focus{outline-color:#91b5df;border-color:#4779
 <div class="panel-intro"><div class="section-kicker">ONLINE FOOD LOOKUP</div><h2>Restaurant foods</h2><p>Search branded foods and restaurant menu items in USDA FoodData Central, calculate estimated classic Points, and save favorites to use offline.</p></div>
 <div class="card">
 <h2>Find a restaurant item</h2>
-<p class="muted">Search using the restaurant name and menu item together, such as “Chick-fil-A grilled chicken sandwich” or “Wendy’s baked potato.” Results depend on what the nutrition database contains; not every restaurant publishes data here.</p>
+<p class="muted">Search for a restaurant and menu item together, such as “Chick-fil-A grilled chicken sandwich” or “Wendy’s baked potato.” This section prioritizes records that actually match the restaurant name, rather than unrelated grocery brands.</p>
 <label for="restaurantSearch">Restaurant and menu item</label>
 <div class="row"><input id="restaurantSearch" class="grow" type="search" placeholder="Restaurant + menu item…" autocomplete="off"><button class="btn" type="button" id="restaurantSearchBtn">Search</button></div>
 <div class="muted" style="margin-top:7px">Examples: McDonald’s fries · Taco Bell bean burrito · Chick-fil-A nuggets</div>
@@ -263,10 +288,20 @@ input:focus,select:focus,textarea:focus{outline-color:#91b5df;border-color:#4779
 </div>
 <div class="card">
 <h2>USDA data access</h2>
-<p class="muted">This lookup uses USDA FoodData Central branded and survey food records. It is not a complete restaurant menu directory, and some menu items may not appear. The app calculates Points using your existing classic Points formula, not PointsPlus or the current WW system.</p>
+<p class="muted">Restaurant searches use USDA FoodData Central branded food records and filter for the restaurant name when a recognized chain is searched. This is not a complete restaurant menu directory, and some menu items may not appear. Points use your classic Points formula, not PointsPlus or the current WW system.</p>
 <label for="fdcApiKey">Optional personal USDA API key</label><input id="fdcApiKey" type="password" autocomplete="off" placeholder="Leave blank to use the shared demo key">
 <div class="row" style="flex-wrap:wrap;margin-top:10px"><button class="btn secondary" type="button" id="saveFdcKey">Save API key on this device</button><a class="btn light" href="https://api.data.gov/signup/" target="_blank" rel="noopener">Get a free API key</a></div>
 <p class="muted" style="margin-top:9px">The shared demo key is limited to 30 requests per hour and 50 per day. Your optional key is stored only in this browser on this device. USDA FoodData Central is the data source; serving sizes and nutrition entries should be checked against the restaurant’s current information.</p>
+</div>
+</section>
+<section id="brands" class="panel">
+<div class="panel-intro"><div class="section-kicker">BRANDED FOOD LOOKUP</div><h2>Brands</h2><p>Search packaged and grocery-store brands separately from restaurant menu items. Results come from USDA FoodData Central branded food records.</p></div>
+<div class="card">
+<h2>Find a branded food</h2>
+<label for="brandSearch">Brand or product name</label>
+<div class="row"><input id="brandSearch" class="grow" type="search" placeholder="e.g. Goya chickpeas or Kraft macaroni" autocomplete="off"><button class="btn" type="button" id="brandSearchBtn">Search</button></div>
+<div id="brandStatus" class="muted" aria-live="polite" style="margin-top:12px">Search requires an internet connection. Foods you save are available later under Saved Foods, including offline.</div>
+<div id="brandResults" style="margin-top:8px"></div>
 </div>
 </section>
 <section id="settings" class="panel">
@@ -284,7 +319,7 @@ input:focus,select:focus,textarea:focus{outline-color:#91b5df;border-color:#4779
  <div class="portion-actions"><button type="button" class="btn" id="portionAdd">Add to selected date</button><button type="button" class="btn secondary" id="portionSave">Save food first</button></div>
  <p class="muted" style="margin-bottom:0;margin-top:12px">All common measures are available. For conversions between weight, volume, and item counts, enter the food-specific equivalent when prompted; density and item sizes vary by food.</p>
  </div></div>
-<div class="foot">My Points Tracker · <strong>Version 28</strong> · Data saved on this device.<br>Personal tracking tool, not affiliated with WeightWatchers. Point calculator is an estimate, not an official WeightWatchers calculator.</div>
+<div class="foot">My Points Tracker · <strong>Version 29</strong> · Data saved on this device.<br>Personal tracking tool, not affiliated with WeightWatchers. Point calculator is an estimate, not an official WeightWatchers calculator.</div>
 </main>
 <script src="https://unpkg.com/@zxing/browser@0.1.5/umd/zxing-browser.min.js"></script>
 <script>
@@ -596,7 +631,7 @@ $('startScanner').addEventListener('click',async()=>{
   }catch(err){stopBarcodeCamera();const msg=(err&&err.name==='NotAllowedError')?'Camera permission was denied. Allow camera access for this Home Screen app in iPhone Settings, then try again.':(err&&err.name==='NotFoundError')?'No usable camera was found on this device. You can enter the barcode manually.':(err&&err.name==='OverconstrainedError')?'The camera could not use the requested settings. Try again, or enter the barcode manually.':'Camera could not start in this app environment. Check camera permission and try again, or enter the barcode manually.';$('scannerMessage').textContent=msg}
 });
 async function lookupProduct(raw){const code=String(raw||'').replace(/\D/g,'');if(!/^\d{8,14}$/.test(code)){ $('barcodeResult').textContent='Enter a valid 8–14 digit UPC/EAN barcode.';return} $('barcodeResult').textContent='Looking up product…';try{const response=await fetch('https://world.openfoodfacts.org/api/v2/product/'+encodeURIComponent(code)+'.json?fields=code,product_name,brands,quantity,serving_size,nutriments',{headers:{'Accept':'application/json'}});if(!response.ok)throw new Error('Product database unavailable');const payload=await response.json();if(payload.status!==1||!payload.product)throw new Error('No product found for that barcode. You can enter it manually below.');const p=payload.product,nu=p.nutriments||{},name=[p.product_name,p.brands].filter(Boolean).join(' — ')||('Barcode '+code);let cal=Number(nu['energy-kcal_serving']),fat=Number(nu['fat_serving']),fiber=Number(nu['fiber_serving']),serving=p.serving_size||'1 serving';if(!Number.isFinite(cal)||cal<=0||!Number.isFinite(fat)||!Number.isFinite(fiber)){const kcal=Number(nu['energy-kcal_100g']),f=Number(nu['fat_100g']),fi=Number(nu['fiber_100g']);const grams=Number((String(serving).match(/[0-9]+(?:\.[0-9]+)?\s*g/i)||[])[0]?.match(/[0-9]+(?:\.[0-9]+)?/));if(Number.isFinite(kcal)&&Number.isFinite(f)&&Number.isFinite(fi)&&grams>0){const scale=grams/100;cal=kcal*scale;fat=f*scale;fiber=fi*scale}else throw new Error('Nutrition facts or serving size are incomplete in the product database. Enter the food manually or use the package label.')}const points=classicPoints(cal,fat,fiber);const food={id:String(Date.now()+Math.random()),name,points,serving,barcode:code,nutrition:{calories:cal,fat,fiber},source:'Open Food Facts'};const existing=data.foods.find(x=>x.barcode===code);if(existing){Object.assign(existing,food,{id:existing.id})}else data.foods.push(food);save();draw();$('barcodeResult').textContent='Found '+name+'. Estimated '+points+' points per '+serving+'. Saved to your food library on this device.';$('foodName').value=name;$('foodPoints').value=points;$('meal').value='Snack'}catch(err){$('barcodeResult').textContent=err.message||'Could not look up this barcode. Try again or enter the food manually.'}}
-// Restaurant lookup uses USDA FoodData Central branded and survey records.
+// Separate restaurant-menu searches from general branded grocery/product searches.
 const FDC_DEMO_KEY='DEMO_KEY';
 function fdcNutrient(food,ids,names){
  const list=Array.isArray(food.foodNutrients)?food.foodNutrients:[];
@@ -617,40 +652,51 @@ function restaurantNutrition(food){
  if(Number(food.servingSize)>0&&['g','gram','grams'].includes(unit)){grams=Number(food.servingSize);servingText='1 serving ('+fmt(grams)+' g)'}
  if(!(grams>0)&&Array.isArray(food.foodPortions)&&food.foodPortions.length){const p=food.foodPortions.find(x=>Number(x.gramWeight)>0);if(p){grams=Number(p.gramWeight);servingText=p.portionDescription||p.modifier||('1 portion ('+fmt(grams)+' g)')}}
  if(!(grams>0))return {ok:false,reason:'Nutrition is listed, but this record does not provide a usable serving weight. We cannot safely convert it to a menu serving.'};
- // FDC nutrient values are standardized per 100 g. Scale them to the listed gram serving.
  const scale=grams/100,cal=calories*scale,fatG=fat*scale,fiberG=fiber*scale;
  return {ok:true,calories:cal,fat:fatG,fiber:fiberG,grams,serving:servingText||('1 serving ('+fmt(grams)+' g)')};
 }
-function restaurantResultHtml(food,index){
- const brand=food.brandOwner||food.brandName||food.brand||food.foodCategory||'USDA food record';
+function restaurantResultHtml(food,index,mode){
+ const brand=food.brandOwner||food.brandName||food.brand||food.foodCategory||'USDA branded food';
  const info=restaurantNutrition(food);
  if(!info.ok)return `<div class="restaurant-result"><strong>${esc(food.description||'Unnamed food')}</strong><div class="restaurant-meta">${esc(brand)}</div><div class="muted" style="margin-top:5px">${esc(info.reason)}</div></div>`;
  const pts=classicPoints(info.calories,info.fat,info.fiber);
  const serving=info.serving||('1 serving ('+fmt(info.grams)+' g)');
- return `<div class="restaurant-result"><div class="row between" style="align-items:flex-start"><div class="grow"><strong>${esc(food.description||'Unnamed food')}</strong><div class="restaurant-meta">${esc(brand)} · ${esc(serving)}</div><div class="restaurant-meta">${Math.round(info.calories)} cal · ${info.fat.toFixed(1)} g fat · ${info.fiber.toFixed(1)} g fiber</div></div><div class="restaurant-points">${fmt(pts)} pts</div></div><div class="restaurant-meta">Estimated classic Points per listed serving</div><div class="restaurant-actions"><button type="button" class="btn" data-restaurant-log="${index}">Save & log</button><button type="button" class="btn secondary" data-restaurant-save="${index}">Save offline</button></div></div>`;
+ return `<div class="restaurant-result"><div class="row between" style="align-items:flex-start"><div class="grow"><strong>${esc(food.description||'Unnamed food')}</strong><div class="restaurant-meta">${esc(brand)} · ${esc(serving)}</div><div class="restaurant-meta">${Math.round(info.calories)} cal · ${info.fat.toFixed(1)} g fat · ${info.fiber.toFixed(1)} g fiber</div></div><div class="restaurant-points">${fmt(pts)} pts</div></div><div class="restaurant-meta">Estimated classic Points per listed serving</div><div class="restaurant-actions"><button type="button" class="btn" data-fdc-log="${mode}:${index}">Save & log</button><button type="button" class="btn secondary" data-fdc-save="${mode}:${index}">Save offline</button></div></div>`;
 }
-let restaurantSearchResults=[];
-async function searchRestaurantFoods(){
- const query=$('restaurantSearch').value.trim();
- if(query.length<3){$('restaurantStatus').textContent='Enter at least 3 characters, preferably the restaurant name and menu item.';$('restaurantResults').innerHTML='';return}
- if(!navigator.onLine){$('restaurantStatus').textContent='You appear to be offline. Search is unavailable, but previously saved restaurant foods can still be found under Saved Foods.';return}
- $('restaurantSearchBtn').disabled=true;$('restaurantStatus').textContent='Searching USDA FoodData Central…';$('restaurantResults').innerHTML='';
+let restaurantSearchResults=[],brandSearchResults=[];
+const RESTAURANT_ALIASES=[
+ ['chick-fil-a',['chick-fil-a','chick fil a','chickfila']],['mcdonalds',["mcdonald's",'mcdonalds','mcdonald']],['wendys',["wendy's",'wendys']],['taco bell',['taco bell']],['burger king',['burger king']],['subway',['subway']],['chipotle',['chipotle']],['starbucks',['starbucks']],['kfc',['kfc','kentucky fried chicken']],['dominos',["domino's",'dominos']],['pizza hut',['pizza hut']],['panera',['panera']],['popeyes',["popeyes",'popeye']],['sonic',['sonic drive']],['arbys',["arby's",'arbys']],['dunkin',['dunkin']],['dairy queen',['dairy queen']],['five guys',['five guys']],['in-n-out',['in-n-out','in n out']]
+];
+function matchingRestaurantAlias(query){const q=query.toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();for(const [key,aliases] of RESTAURANT_ALIASES){if(aliases.some(a=>q.includes(a.replace(/[^a-z0-9]+/g,' ').trim())))return aliases;}return null;}
+function renderFdcResults(mode){const results=mode==='restaurant'?restaurantSearchResults:brandSearchResults;const target=mode==='restaurant'?'restaurantResults':'brandResults';$(target).innerHTML=results.map((f,i)=>restaurantResultHtml(f,i,mode)).join('');}
+async function searchFdcFoods(mode){
+ const restaurant=mode==='restaurant',input=$(restaurant?'restaurantSearch':'brandSearch'),status=$(restaurant?'restaurantStatus':'brandStatus'),resultsEl=$(restaurant?'restaurantResults':'brandResults'),btn=$(restaurant?'restaurantSearchBtn':'brandSearchBtn');
+ const query=input.value.trim();
+ if(query.length<3){status.textContent='Enter at least 3 characters to search.';resultsEl.innerHTML='';return}
+ if(!navigator.onLine){status.textContent='You appear to be offline. Search is unavailable, but saved foods remain available under Saved Foods.';return}
+ btn.disabled=true;status.textContent='Searching USDA FoodData Central branded foods…';resultsEl.innerHTML='';
  try{
   const key=(data.settings&&data.settings.fdcApiKey||'').trim()||FDC_DEMO_KEY;
-  const url='https://api.nal.usda.gov/fdc/v1/foods/search?api_key='+encodeURIComponent(key)+'&query='+encodeURIComponent(query)+'&pageSize=30';
+  const url='https://api.nal.usda.gov/fdc/v1/foods/search?api_key='+encodeURIComponent(key)+'&query='+encodeURIComponent(query)+'&dataType=Branded&pageSize=50';
   const response=await fetch(url,{headers:{'Accept':'application/json'}});
   if(response.status===429)throw new Error('The USDA search limit has been reached. Wait and try again, or add your own free API key below.');
   if(response.status===403)throw new Error('USDA did not accept the API key. Check your key below or use the shared demo key.');
   if(!response.ok)throw new Error('USDA food lookup is temporarily unavailable (HTTP '+response.status+').');
-  const payload=await response.json();restaurantSearchResults=Array.isArray(payload.foods)?payload.foods:[];
-  if(!restaurantSearchResults.length){$('restaurantStatus').textContent='No matching records were found. Try the restaurant name and menu item with different wording.';return}
-  $('restaurantStatus').textContent='Found '+restaurantSearchResults.length+' database matches. Entries with complete nutrition and a usable serving weight can be calculated; other entries explain what information is missing.';
-  $('restaurantResults').innerHTML=restaurantSearchResults.map(restaurantResultHtml).join('');
- }catch(err){$('restaurantStatus').textContent=err.message||'Could not search the restaurant food database. Check your connection and try again.'}
- finally{$('restaurantSearchBtn').disabled=false}
+  const payload=await response.json();let matches=Array.isArray(payload.foods)?payload.foods:[];
+  if(restaurant){
+   const aliases=matchingRestaurantAlias(query);
+   if(aliases){const norm=s=>String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();matches=matches.filter(f=>{const hay=norm([f.description,f.brandOwner,f.brandName].filter(Boolean).join(' '));return aliases.some(a=>hay.includes(norm(a)));});}
+   restaurantSearchResults=matches;brandSearchResults=[];
+  }else{brandSearchResults=matches;}
+  const results=restaurant?restaurantSearchResults:brandSearchResults;
+  if(!results.length){status.textContent=restaurant?'No restaurant-branded matches were found. Try adding the specific menu item or checking the Brands section.':'No branded products were found. Try the brand name or a shorter product description.';return}
+  status.textContent='Found '+results.length+' branded database matches. Entries with complete nutrition and a usable serving weight can be calculated; other entries explain what information is missing.';
+  renderFdcResults(mode);
+ }catch(err){status.textContent=err.message||'Could not search the food database. Check your connection and try again.'}
+ finally{btn.disabled=false}
 }
-function storeRestaurantFood(index,logNow){
- const f=restaurantSearchResults[index];if(!f)return;
+function storeFdcFood(mode,index,logNow){
+ const results=mode==='restaurant'?restaurantSearchResults:brandSearchResults;const f=results[index];if(!f)return;
  const info=restaurantNutrition(f);if(!info.ok){alert(info.reason);return}
  const name=[f.description,f.brandOwner||f.brandName].filter(Boolean).join(' — ');
  const points=classicPoints(info.calories,info.fat,info.fiber);
@@ -659,13 +705,18 @@ function storeRestaurantFood(index,logNow){
  if(existing)Object.assign(existing,food,{id:existing.id});else data.foods.push(food);
  save();draw();
  if(logNow){openPortion({kind:'saved',name:food.name,points:food.points,serving:food.serving,conversions:{}});$('portionMeal').value='Lunch';updatePortion();}
- else $('restaurantStatus').textContent='Saved '+food.name+' to your on-device food list. You can find and log it from Saved Foods, even offline.';
+ else $(mode==='restaurant'?'restaurantStatus':'brandStatus').textContent='Saved '+food.name+' to your on-device food list. You can find and log it from Saved Foods, even offline.';
 }
-$('restaurantSearchBtn').addEventListener('click',searchRestaurantFoods);
-$('restaurantSearch').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();searchRestaurantFoods()}});
-$('restaurantSearch').addEventListener('input',()=>{if(!$('restaurantSearch').value.trim()){$('restaurantResults').innerHTML='';restaurantSearchResults=[];$('restaurantStatus').textContent='Search requires an internet connection. Saved restaurant foods remain available in your personal food list when offline.'}});
-$('saveFdcKey').addEventListener('click',()=>{data.settings.fdcApiKey=$('fdcApiKey').value.trim();save();$('restaurantStatus').textContent=data.settings.fdcApiKey?'Your USDA API key is saved on this device.':'Using the shared USDA demo key.';});
+$('restaurantSearchBtn').addEventListener('click',()=>searchFdcFoods('restaurant'));
+$('restaurantSearch').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();searchFdcFoods('restaurant')}});
+$('brandSearchBtn').addEventListener('click',()=>searchFdcFoods('brand'));
+$('brandSearch').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();searchFdcFoods('brand')}});
+$('restaurantSearch').addEventListener('input',()=>{if(!$('restaurantSearch').value.trim()){$('restaurantResults').innerHTML='';restaurantSearchResults=[];$('restaurantStatus').textContent='Search requires an internet connection. Saved restaurant foods remain available in Saved Foods when offline.'}});
+$('brandSearch').addEventListener('input',()=>{if(!$('brandSearch').value.trim()){$('brandResults').innerHTML='';brandSearchResults=[];$('brandStatus').textContent='Search requires an internet connection. Saved branded foods remain available in Saved Foods when offline.'}});
+$('saveFdcKey').addEventListener('click',()=>{data.settings.fdcApiKey=$('fdcApiKey').value.trim();save();$('restaurantStatus').textContent=data.settings.fdcApiKey?'Your USDA API key is saved on this device.':'Using the shared USDA demo key.';$('brandStatus').textContent=data.settings.fdcApiKey?'Your USDA API key is saved on this device.':'Using the shared USDA demo key.';});
 $('fdcApiKey').value=(data.settings&&data.settings.fdcApiKey)||'';
+document.addEventListener('click',e=>{const t=e.target.closest('button');if(!t)return;if(t.dataset.fdcLog){const [mode,index]=t.dataset.fdcLog.split(':');storeFdcFood(mode,Number(index),true);}if(t.dataset.fdcSave){const [mode,index]=t.dataset.fdcSave.split(':');storeFdcFood(mode,Number(index),false);}});
+
 $('restaurantResults').addEventListener('click',e=>{const t=e.target.closest('button');if(!t)return;if(t.dataset.restaurantLog!==undefined)storeRestaurantFood(Number(t.dataset.restaurantLog),true);if(t.dataset.restaurantSave!==undefined)storeRestaurantFood(Number(t.dataset.restaurantSave),false)});
 $('lookupBarcode').addEventListener('click',()=>lookupProduct($('barcodeInput').value));
 $('exportJson').addEventListener('click',()=>download('my-points-tracker-backup-'+today()+'.json',JSON.stringify({...data,exportedAt:new Date().toISOString(),formatVersion:1},null,2),'application/json'));
@@ -688,7 +739,7 @@ document.querySelectorAll('input[type="search"]').forEach(input=>{
 
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js?v=28', { updateViaCache: 'none' }).catch(err => console.warn('Offline setup could not be enabled:', err));
+    navigator.serviceWorker.register('./sw.js?v=29', { updateViaCache: 'none' }).catch(err => console.warn('Offline setup could not be enabled:', err));
   });
 }
 </script>
