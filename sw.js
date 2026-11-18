@@ -1,12 +1,12 @@
-// Points Tracker service worker — version 30
-const CACHE_NAME = 'my-points-tracker-v30';
+// Points Tracker service worker — version 31
+const CACHE_NAME = 'my-points-tracker-v31';
 const ROOT_URL = new URL('./', self.registration.scope).href;
 const APP_URL = new URL('./index.html', self.registration.scope).href;
 const ZXING_URL = 'https://unpkg.com/@zxing/browser@0.1.5/umd/zxing-browser.min.js';
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
-    for (const url of [ROOT_URL, APP_URL]) {
+    for (const url of [ROOT_URL, APP_URL, new URL('./icon.svg', self.registration.scope).href, new URL('./icon.png', self.registration.scope).href]) {
       try { const r = await fetch(url, {cache:'reload'}); if (r.ok) await cache.put(url, r.clone()); } catch (_) {}
     }
     // Cache the scanner library during the first online visit so camera decoding

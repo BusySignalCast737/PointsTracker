@@ -4,12 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#24558a">
-<meta name="app-version" content="30">
+<meta name="app-version" content="31">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="My Points">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.png">
 <title>My Points Tracker</title>
 <style>
 :root{--ink:#172b27;--muted:#667570;--green:#24558a;--mint:#e7f0fb;--paper:#f6f7f3;--card:#fff;--line:#dce5ef;--orange:#df7d45;--red:#a43d36}
@@ -153,7 +154,7 @@ input:focus,select:focus,textarea:focus{outline-color:#91b5df;border-color:#4779
 .tabs button:nth-child(2){grid-column:2;grid-row:1}
 .tabs button:nth-child(3){grid-column:1;grid-row:2}
 .tabs button:nth-child(4){grid-column:2;grid-row:2}
-/* Restaurant Foods takes Activity's former position; Activity moves one column right. */
+/* Restaurant Foods occupies the former Activity position; Brands sits above Activity. */
 .tabs button:nth-child(5){grid-column:3;grid-row:1}
 .tabs button:nth-child(6){grid-column:3;grid-row:2}
 .tabs button:nth-child(7){grid-column:4;grid-row:1}
@@ -170,6 +171,16 @@ input:focus,select:focus,textarea:focus{outline-color:#91b5df;border-color:#4779
 #brandResults .restaurant-meta{font-size:12px;color:var(--muted);margin-top:3px}
 #brandResults .restaurant-points{font-size:19px;font-weight:850;color:var(--green);white-space:nowrap}
 @media(max-width:360px){.tabs{grid-auto-columns:104px}.tabs button,.tabs button[data-tab="settings"]{width:104px;min-width:104px;max-width:104px;font-size:11px}}
+
+/* Version 31: clearer Add Food sections and interactive weight chart */
+#addfood #quickSavedFoodCard,#addfood #manualFoodCard{border-color:#c8d9ee;box-shadow:0 3px 10px #24558a12}
+#addfood #quickSavedFoodCard h2,#addfood #manualFoodCard h2{color:#24558a}
+#addfood #quickSavedFoodCard{background:linear-gradient(180deg,#f7faff 0%,#fff 65%)}
+#addfood #manualFoodCard{background:#fff}
+#weightChart{touch-action:pan-y;cursor:pointer;outline-offset:3px}
+#weightChart:focus-visible{outline:2px solid #4f80b8;border-radius:8px}
+.weight-point-info{background:#e7f0fb;border:1px solid #cbdcf0;border-radius:11px;padding:10px 12px;margin:9px 0 10px;color:#204d7e;font-size:13px;font-weight:650;min-height:42px}
+
 </style>
 </head>
 <body>
@@ -180,11 +191,11 @@ input:focus,select:focus,textarea:focus{outline-color:#91b5df;border-color:#4779
   <button class="active" role="tab" aria-selected="true" aria-controls="today" data-tab="today">Today</button>
   <button role="tab" aria-selected="false" aria-controls="weight" data-tab="weight">Weight</button>
   <button role="tab" aria-selected="false" aria-controls="addfood" data-tab="addfood">Add food</button>
-  <button role="tab" aria-selected="false" aria-controls="foods" data-tab="foods">Saved foods</button>
+  <button role="tab" aria-selected="false" aria-controls="foods" data-tab="foods">Library</button>
   <button role="tab" aria-selected="false" aria-controls="restaurants" data-tab="restaurants">Restaurant foods</button>
   <button role="tab" aria-selected="false" aria-controls="history" data-tab="history">History</button>
-  <button role="tab" aria-selected="false" aria-controls="activity" data-tab="activity">Activity</button>
   <button role="tab" aria-selected="false" aria-controls="brands" data-tab="brands">Brands</button>
+  <button role="tab" aria-selected="false" aria-controls="activity" data-tab="activity">Activity</button>
   <button role="tab" aria-selected="false" aria-controls="settings" data-tab="settings">Settings</button>
  </nav>
 </div>
@@ -217,7 +228,7 @@ input:focus,select:focus,textarea:focus{outline-color:#91b5df;border-color:#4779
 <form id="calcForm"><div class="formgrid"><div class="full"><label for="calcName">Food name (optional)</label><input id="calcName" placeholder="e.g. Granola bar"></div><div><label for="calories">Calories</label><input id="calories" type="number" min="0" required placeholder="120"></div><div><label for="fat">Fat (grams)</label><input id="fat" type="number" min="0" step=".1" required placeholder="4"></div><div><label for="fiber">Dietary fiber (grams)</label><input id="fiber" type="number" min="0" step=".1" required placeholder="3"></div><div><label for="calcServingQty">Nutrition facts are for</label><input id="calcServingQty" type="text" value="1" inputmode="decimal" aria-label="Base serving quantity"><div class="fraction-buttons" data-fraction-target="calcServingQty"><button type="button" class="tinybtn" data-fraction="1/8">⅛</button><button type="button" class="tinybtn" data-fraction="1/4">¼</button><button type="button" class="tinybtn" data-fraction="1/3">⅓</button><button type="button" class="tinybtn" data-fraction="1/2">½</button><button type="button" class="tinybtn" data-fraction="3/4">¾</button><button type="button" class="tinybtn" data-fraction="1">1</button><div class="fraction-buttons" aria-label="Add a fraction to the whole-number amount"><button type="button" class="tinybtn" data-mixed-fraction="1/8">+⅛</button><button type="button" class="tinybtn" data-mixed-fraction="1/4">+¼</button><button type="button" class="tinybtn" data-mixed-fraction="1/3">+⅓</button><button type="button" class="tinybtn" data-mixed-fraction="1/2">+½</button><button type="button" class="tinybtn" data-mixed-fraction="2/3">+⅔</button><button type="button" class="tinybtn" data-mixed-fraction="3/4">+¾</button></div></div></div><div><label for="calcServingUnit">Serving measurement</label><select id="calcServingUnit"><option value="cup">Cup</option><option value="tbsp">Tablespoon</option><option value="tsp">Teaspoon</option><option value="oz">Ounce</option><option value="g">Gram</option><option value="mg">Milligram</option><option value="ml">Milliliter</option><option value="piece">Piece</option><option value="slice">Slice</option><option value="item">Item</option><option value="serving">Serving</option></select></div><div><label for="servings">Amount eaten (servings)</label><input id="servings" type="text" inputmode="decimal" value="1" required placeholder="1/2, 3/4, 0.25"><div class="fraction-buttons" data-fraction-target="servings"><button type="button" class="tinybtn" data-fraction="1/8">⅛</button><button type="button" class="tinybtn" data-fraction="1/4">¼</button><button type="button" class="tinybtn" data-fraction="1/3">⅓</button><button type="button" class="tinybtn" data-fraction="1/2">½</button><button type="button" class="tinybtn" data-fraction="2/3">⅔</button><button type="button" class="tinybtn" data-fraction="3/4">¾</button><button type="button" class="tinybtn" data-fraction="1">1</button><div class="fraction-buttons" aria-label="Add a fraction to the whole-number amount"><button type="button" class="tinybtn" data-mixed-fraction="1/8">+⅛</button><button type="button" class="tinybtn" data-mixed-fraction="1/4">+¼</button><button type="button" class="tinybtn" data-mixed-fraction="1/3">+⅓</button><button type="button" class="tinybtn" data-mixed-fraction="1/2">+½</button><button type="button" class="tinybtn" data-mixed-fraction="2/3">+⅔</button><button type="button" class="tinybtn" data-mixed-fraction="3/4">+¾</button></div></div></div></div><div class="row between" style="margin-top:13px"><div><div class="muted">Estimated points</div><div class="big" id="calcResult">—</div></div><button class="btn" type="submit">Use points in log</button></div></form>
 </div>
 <div class="card">
-<h2>Log food</h2>
+<h2>Barcode scanner</h2>
 <div class="notice" style="margin-bottom:12px">Scan a packaged food barcode to look up its nutrition facts. Product lookup needs an internet connection; foods you save remain on this device for offline use.</div>
 <div class="scanner-box">
  <div class="subsection-heading">Barcode scanner</div>
@@ -227,9 +238,15 @@ input:focus,select:focus,textarea:focus{outline-color:#91b5df;border-color:#4779
  <label for="barcodeInput">Barcode number</label><div class="row"><input id="barcodeInput" inputmode="numeric" autocomplete="off" placeholder="Enter UPC / EAN" class="grow"><button class="btn secondary" id="lookupBarcode" type="button">Look up</button></div>
  <div id="barcodeResult" class="muted" aria-live="polite" style="margin-top:8px"></div>
 </div>
-
-<div class="subsection-heading">Use a saved food</div><label for="quickSavedFoodSearch">Search your saved foods</label><input id="quickSavedFoodSearch" type="search" placeholder="Start typing a saved food…" autocomplete="off"><div id="quickSavedFoodResults" class="saved-search-results" aria-live="polite"><div class="empty">Type a name to find one of your saved foods.</div></div>
-<div class="or-divider"><span>OR ENTER A FOOD MANUALLY</span></div>
+</div>
+<div class="card" id="quickSavedFoodCard">
+<h2>Use a saved food</h2>
+<p class="muted">Search your personal food list and choose an item to log.</p>
+<label for="quickSavedFoodSearch">Search your saved foods</label><input id="quickSavedFoodSearch" type="search" placeholder="Start typing a saved food…" autocomplete="off"><div id="quickSavedFoodResults" class="saved-search-results" aria-live="polite"><div class="empty">Type a name to find one of your saved foods.</div></div>
+</div>
+<div class="card" id="manualFoodCard">
+<h2>Enter a food manually</h2>
+<p class="muted">Add a food and its Points value when it isn't already in your saved list.</p>
 <form id="logForm"><div class="full"><label for="entryDate">Add this food to</label><input id="entryDate" type="date" value=""></div><div class="formgrid"><div class="full"><label for="foodName">Food / meal</label><input id="foodName" required placeholder="e.g. Turkey sandwich"></div><div><label for="foodPoints">Points per listed serving</label><input id="foodPoints" type="number" min="0" max="99" step=".5" required placeholder="e.g. 6"></div><div><label for="manualServingQty">Serving quantity</label><input id="manualServingQty" type="text" inputmode="decimal" value="1" placeholder="1"><div class="fraction-buttons" data-fraction-target="manualServingQty"><button type="button" class="tinybtn" data-fraction="1/4">¼</button><button type="button" class="tinybtn" data-fraction="1/3">⅓</button><button type="button" class="tinybtn" data-fraction="1/2">½</button><button type="button" class="tinybtn" data-fraction="3/4">¾</button><button type="button" class="tinybtn" data-fraction="1">1</button><div class="fraction-buttons" aria-label="Add a fraction to the whole-number amount"><button type="button" class="tinybtn" data-mixed-fraction="1/8">+⅛</button><button type="button" class="tinybtn" data-mixed-fraction="1/4">+¼</button><button type="button" class="tinybtn" data-mixed-fraction="1/3">+⅓</button><button type="button" class="tinybtn" data-mixed-fraction="1/2">+½</button><button type="button" class="tinybtn" data-mixed-fraction="2/3">+⅔</button><button type="button" class="tinybtn" data-mixed-fraction="3/4">+¾</button></div></div></div><div><label for="manualServingUnit">Serving measurement</label><select id="manualServingUnit"><option value="cup">Cup</option><option value="tbsp">Tablespoon</option><option value="tsp">Teaspoon</option><option value="oz">Ounce</option><option value="g">Gram</option><option value="mg">Milligram</option><option value="ml">Milliliter</option><option value="piece">Piece</option><option value="slice">Slice</option><option value="item">Item</option><option value="serving">Serving</option></select></div><div><label for="meal">Meal</label><select id="meal"><option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Snack</option><option>Other</option></select></div></div><div class="row" style="margin-top:12px"><button class="btn" type="submit">Add to selected date</button><button class="btn secondary" type="button" id="saveFoodFromLog">Save food too</button></div></form>
 </div>
 </section>
@@ -256,10 +273,13 @@ input:focus,select:focus,textarea:focus{outline-color:#91b5df;border-color:#4779
 <div class="card"><h2>Recent days</h2><p class="muted">Pick a day below to see its food log.</p><div id="recentDays"></div></div>
 </section>
 <section id="foods" class="panel">
-<div class="panel-intro"><div class="section-kicker">YOUR FOOD LISTS</div><h2>Saved foods & meals</h2><p>Find foods, save your regular items, and build meals you use often.</p></div>
+<div class="panel-intro"><div class="section-kicker">YOUR FOOD LISTS</div><h2>Library</h2><p>Search the built-in food library, find your saved foods, and build meals you use often.</p></div>
 <div class="card"><h2>Built-in food library</h2><p class="muted">Search common foods and portions. Point values are estimates calculated from typical nutrition data using the approximate classic-Points formula in this app; brands and recipes vary. You can log a result or save it to your personal list.</p>
 <label for="librarySearch">Search the food library</label><input id="librarySearch" type="search" placeholder="Try: banana, oatmeal, chicken, yogurt…" autocomplete="off">
 <div id="libraryList" style="margin-top:8px"></div></div>
+<div class="card"><h2>Your saved foods</h2><p class="muted">Your personal food list stays tucked away until you search for something.</p>
+<label for="savedFoodSearch">Search your saved foods</label><input id="savedFoodSearch" type="search" placeholder="Start typing a saved food…" autocomplete="off">
+<div id="savedList" class="saved-search-results" aria-live="polite"><div class="empty">Type a food name above to find it.</div></div></div>
 <div class="card"><h2>Saved foods</h2><p class="muted">Store your usual foods and their point values on this device.</p>
 <form id="savedForm"><div class="formgrid"><div class="full"><label for="savedName">Food name</label><input id="savedName" required placeholder="e.g. Plain bagel"></div><div><label for="savedPoints">Points per serving</label><input id="savedPoints" type="number" min="0" max="99" step=".5" required placeholder="5"></div><div><label for="savedServingQty">Serving quantity</label><input id="savedServingQty" value="1" inputmode="decimal" placeholder="1"><div class="fraction-buttons" data-fraction-target="savedServingQty"><button type="button" class="tinybtn" data-fraction="1/4">¼</button><button type="button" class="tinybtn" data-fraction="1/3">⅓</button><button type="button" class="tinybtn" data-fraction="1/2">½</button><button type="button" class="tinybtn" data-fraction="3/4">¾</button><button type="button" class="tinybtn" data-fraction="1">1</button><div class="fraction-buttons" aria-label="Add a fraction to the whole-number amount"><button type="button" class="tinybtn" data-mixed-fraction="1/8">+⅛</button><button type="button" class="tinybtn" data-mixed-fraction="1/4">+¼</button><button type="button" class="tinybtn" data-mixed-fraction="1/3">+⅓</button><button type="button" class="tinybtn" data-mixed-fraction="1/2">+½</button><button type="button" class="tinybtn" data-mixed-fraction="2/3">+⅔</button><button type="button" class="tinybtn" data-mixed-fraction="3/4">+¾</button></div></div></div><div><label for="savedServingUnit">Serving measurement</label><select id="savedServingUnit"><option value="cup">Cup</option><option value="tbsp">Tablespoon</option><option value="tsp">Teaspoon</option><option value="oz">Ounce</option><option value="g">Gram</option><option value="mg">Milligram</option><option value="ml">Milliliter</option><option value="piece">Piece</option><option value="slice">Slice</option><option value="item">Item</option><option value="serving">Serving</option></select></div><p class="muted full">This defines what one listed serving means. You can then log a fraction or multiple of it.</p></div><button class="btn" style="margin-top:12px" type="submit">Save food</button></form></div>
 <div class="card"><h2>Saved Meals</h2><p class="muted">Combine saved foods into repeatable meals. Log all ingredients together with one tap.</p>
@@ -267,14 +287,12 @@ input:focus,select:focus,textarea:focus{outline-color:#91b5df;border-color:#4779
 <div class="formgrid"><div class="full"><label for="mealFoodSearch">Search foods to add</label><input id="mealFoodSearch" type="search" autocomplete="off" placeholder="Type a food name, e.g. Greek yogurt"><div id="mealFoodResults" class="muted" style="margin-top:6px" aria-live="polite">Start typing to search your saved foods and built-in library.</div><div id="mealFoodSelected" class="notice hidden" style="margin-top:8px"></div></div><div><label for="mealFoodAmount">Amount of listed serving</label><input id="mealFoodAmount" type="text" value="1" inputmode="decimal" placeholder="1/2"></div><div><label for="mealFoodMeal">Log under</label><select id="mealFoodMeal"><option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Snack</option></select></div></div>
 <div class="fraction-buttons" data-fraction-target="mealFoodAmount"><button type="button" class="tinybtn" data-fraction="1/8">⅛</button><button type="button" class="tinybtn" data-fraction="1/4">¼</button><button type="button" class="tinybtn" data-fraction="1/3">⅓</button><button type="button" class="tinybtn" data-fraction="1/2">½</button><button type="button" class="tinybtn" data-fraction="2/3">⅔</button><button type="button" class="tinybtn" data-fraction="3/4">¾</button><button type="button" class="tinybtn" data-fraction="1">1</button><div class="fraction-buttons" aria-label="Add a fraction to the whole-number amount"><button type="button" class="tinybtn" data-mixed-fraction="1/8">+⅛</button><button type="button" class="tinybtn" data-mixed-fraction="1/4">+¼</button><button type="button" class="tinybtn" data-mixed-fraction="1/3">+⅓</button><button type="button" class="tinybtn" data-mixed-fraction="1/2">+½</button><button type="button" class="tinybtn" data-mixed-fraction="2/3">+⅔</button><button type="button" class="tinybtn" data-mixed-fraction="3/4">+¾</button></div></div>
 <button class="btn secondary" type="button" id="mealAddIngredient" style="margin-top:10px">Add ingredient</button><div id="mealDraftList" class="muted" style="margin-top:10px">No ingredients added yet.</div><div class="row between" style="margin-top:12px"><strong>Meal total</strong><strong id="mealDraftTotal">0 pts</strong></div><button class="btn" type="submit" style="margin-top:12px">Save meal</button></form><label for="savedMealSearch">Find a saved meal</label><input id="savedMealSearch" type="search" placeholder="Search your saved meals…" autocomplete="off"><label for="mealLogDate">Add meal to</label><input id="mealLogDate" type="date"><div id="savedMealsList" class="saved-meal-results" style="margin-top:10px"></div></div>
-<div class="card"><h2>Your saved foods</h2><p class="muted">Your personal food list stays tucked away until you search for something.</p>
-<label for="savedFoodSearch">Search your saved foods</label><input id="savedFoodSearch" type="search" placeholder="Start typing a saved food…" autocomplete="off">
-<div id="savedList" class="saved-search-results" aria-live="polite"><div class="empty">Type a food name above to find it.</div></div></div>
+
 </section>
 <section id="weight" class="panel">
 <div class="panel-intro"><div class="section-kicker">PROGRESS</div><h2>Weight</h2><p>Record weigh-ins and follow your progress over time.</p></div>
 <div class="card"><h2>Record a weigh-in</h2><form id="weightForm"><div class="formgrid"><div><label for="weightDate">Date</label><input id="weightDate" type="date" required></div><div><label for="weightValue">Weight (lb)</label><input id="weightValue" type="number" min="1" max="1500" step=".1" required placeholder="e.g. 215.4"></div><div class="full"><label for="weightNote">Note (optional)</label><input id="weightNote" placeholder="e.g. morning weigh-in"></div></div><button class="btn" style="margin-top:12px" type="submit">Save weigh-in</button></form></div>
-<div class="card"><h2>Weight trend</h2><div class="stats"><div class="stat"><small>Latest weight</small><strong id="latestWeight">—</strong></div><div class="stat"><small>Change from start</small><strong id="weightChange">—</strong></div></div><div class="chartwrap"><canvas id="weightChart" aria-label="Weight history chart"></canvas></div><div class="muted">Chart uses your recorded weigh-ins. A positive change means weight increased.</div></div>
+<div class="card"><h2>Weight trend</h2><div class="stats"><div class="stat"><small>Latest weight</small><strong id="latestWeight">—</strong></div><div class="stat"><small>Change from start</small><strong id="weightChange">—</strong></div></div><div class="chartwrap"><canvas id="weightChart" role="button" tabindex="0" aria-label="Interactive weight history chart. Tap a plotted point to see its date and weight."></canvas></div><div id="weightPointInfo" class="weight-point-info" aria-live="polite">Tap any point on the chart to see that weigh-in’s date and weight.</div><div class="muted">Chart uses your recorded weigh-ins. A positive change means weight increased.</div></div>
 <div class="card"><h2>Weigh-in history</h2><div id="weightList"></div></div>
 </section>
 <section id="restaurants" class="panel">
@@ -321,7 +339,7 @@ input:focus,select:focus,textarea:focus{outline-color:#91b5df;border-color:#4779
  <div class="portion-actions"><button type="button" class="btn" id="portionAdd">Add to selected date</button><button type="button" class="btn secondary" id="portionSave">Save food first</button></div>
  <p class="muted" style="margin-bottom:0;margin-top:12px">All common measures are available. For conversions between weight, volume, and item counts, enter the food-specific equivalent when prompted; density and item sizes vary by food.</p>
  </div></div>
-<div class="foot">My Points Tracker · <strong>Version 30</strong> · Data saved on this device.<br>Personal tracking tool, not affiliated with WeightWatchers. Point calculator is an estimate, not an official WeightWatchers calculator.</div>
+<div class="foot">My Points Tracker · <strong>Version 31</strong> · Data saved on this device.<br>Personal tracking tool, not affiliated with WeightWatchers. Point calculator is an estimate, not an official WeightWatchers calculator.</div>
 </main>
 <script src="https://unpkg.com/@zxing/browser@0.1.5/umd/zxing-browser.min.js"></script>
 <script>
@@ -330,6 +348,7 @@ const KEY='myPointsTracker.v1';
 const $=id=>document.getElementById(id);
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 let data={settings:{allowance:38,startWeight:'',goalWeight:''},foods:[],logs:[],weights:[],activities:[],meals:[]};
+let chartPointLocations=[];let selectedWeightDate=null;
 try{const old=localStorage.getItem(KEY);if(old){const parsed=JSON.parse(old);if(parsed&&parsed.settings&&Array.isArray(parsed.foods)&&Array.isArray(parsed.logs)&&Array.isArray(parsed.weights)){data=parsed;if(!Array.isArray(data.activities))data.activities=[];if(!Array.isArray(data.meals))data.meals=[]}}}catch(e){}
 
 function save(){try{localStorage.setItem(KEY,JSON.stringify(data));return true}catch(e){alert('Could not save locally. Please export a backup and check browser storage settings.');return false}}
@@ -479,7 +498,38 @@ $('latestWeight').textContent=latest?fmt(latest.weight)+' lb':'—';const change
 $('weightList').innerHTML=ws.length?ws.slice().reverse().map(w=>`<div class="weightrow"><div class="grow"><strong>${esc(w.date)}</strong><div class="muted">${esc(w.note||'Weigh-in')}</div></div><span class="points">${fmt(w.weight)} lb</span><button class="tinybtn" data-delete-weight="${esc(w.id)}">×</button></div>`).join(''):'<div class="empty">No weigh-ins yet. Record your starting weight above.</div>';
 drawChart(ws);
 }
-function drawChart(ws){const c=$('weightChart'),ctx=c.getContext('2d'),rect=c.getBoundingClientRect(),dpr=window.devicePixelRatio||1;c.width=Math.max(1,rect.width*dpr);c.height=Math.max(1,rect.height*dpr);ctx.scale(dpr,dpr);const w=rect.width,h=rect.height;ctx.clearRect(0,0,w,h);if(!ws.length){ctx.fillStyle='#667570';ctx.font='14px sans-serif';ctx.textAlign='center';ctx.fillText('Your weight chart will appear here',w/2,h/2);return}const vals=ws.map(x=>n(x.weight)),min=Math.min(...vals)-2,max=Math.max(...vals)+2, left=38,right=12,top=18,bottom=30, pw=w-left-right,ph=h-top-bottom;ctx.font='11px sans-serif';ctx.fillStyle='#667570';ctx.strokeStyle='#dce5ef';ctx.lineWidth=1;for(let i=0;i<4;i++){const y=top+ph*i/3;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(w-right,y);ctx.stroke();ctx.fillText(fmt(max-(max-min)*i/3),2,y+4)}const pts=ws.map((p,i)=>({x:left+(ws.length===1?pw/2:pw*i/(ws.length-1)),y:top+ph*(max-n(p.weight))/(max-min),p}));ctx.strokeStyle='#4f80b8';ctx.lineWidth=2.5;ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();pts.forEach((p,i)=>{ctx.fillStyle='#24558a';ctx.beginPath();ctx.arc(p.x,p.y,3.5,0,Math.PI*2);ctx.fill();if(i===0||i===pts.length-1||pts.length<=5){ctx.fillStyle='#667570';ctx.textAlign=i===0?'left':i===pts.length-1?'right':'center';ctx.fillText(p.p.date.slice(5),p.x, h-8)}})}
+function showWeightPoint(index){
+ const point=chartPointLocations[index];if(!point)return;
+ selectedWeightDate=point.p.date;
+ const dateObj=new Date(point.p.date+'T00:00:00');
+ const dateLabel=isNaN(dateObj.getTime())?point.p.date:dateObj.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+ const note=point.p.note?(' · '+point.p.note):'';
+ $('weightPointInfo').textContent=dateLabel+' · '+fmt(point.p.weight)+' lb'+note;
+ drawChart(data.weights.slice().sort((a,b)=>a.date.localeCompare(b.date)),true);
+}
+function drawChart(ws,keepSelection=false){
+ const c=$('weightChart'),ctx=c.getContext('2d'),rect=c.getBoundingClientRect(),dpr=window.devicePixelRatio||1;
+ c.width=Math.max(1,rect.width*dpr);c.height=Math.max(1,rect.height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);
+ const w=rect.width,h=rect.height;ctx.clearRect(0,0,w,h);chartPointLocations=[];
+ if(!ws.length){ctx.fillStyle='#667570';ctx.font='14px sans-serif';ctx.textAlign='center';ctx.fillText('Your weight chart will appear here',w/2,h/2);$('weightPointInfo').textContent='Your weigh-in dates and weights will appear here when you record them.';selectedWeightDate=null;return}
+ const vals=ws.map(x=>n(x.weight)),min=Math.min(...vals)-2,max=Math.max(...vals)+2,left=38,right=12,top=18,bottom=30,pw=w-left-right,ph=h-top-bottom;
+ ctx.font='11px sans-serif';ctx.fillStyle='#667570';ctx.strokeStyle='#dce5ef';ctx.lineWidth=1;
+ for(let i=0;i<4;i++){const y=top+ph*i/3;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(w-right,y);ctx.stroke();ctx.fillText(fmt(max-(max-min)*i/3),2,y+4)}
+ chartPointLocations=ws.map((p,i)=>({x:left+(ws.length===1?pw/2:pw*i/(ws.length-1)),y:top+ph*(max-n(p.weight))/(max-min),p}));
+ ctx.strokeStyle='#4f80b8';ctx.lineWidth=2.5;ctx.beginPath();chartPointLocations.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();
+ chartPointLocations.forEach((p,i)=>{const selected=p.p.date===selectedWeightDate;ctx.fillStyle='#24558a';ctx.beginPath();ctx.arc(p.x,p.y,selected?7:4.5,0,Math.PI*2);ctx.fill();if(selected){ctx.strokeStyle='#8db4e0';ctx.lineWidth=3;ctx.beginPath();ctx.arc(p.x,p.y,10,0,Math.PI*2);ctx.stroke()}if(i===0||i===chartPointLocations.length-1||chartPointLocations.length<=5){ctx.fillStyle='#667570';ctx.textAlign=i===0?'left':i===chartPointLocations.length-1?'right':'center';ctx.fillText(p.p.date.slice(5),p.x,h-8)}});
+ if(selectedWeightDate){const selected=chartPointLocations.find(p=>p.p.date===selectedWeightDate);if(selected){const d=new Date(selected.p.date+'T00:00:00');$('weightPointInfo').textContent=(isNaN(d.getTime())?selected.p.date:d.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'}))+' · '+fmt(selected.p.weight)+' lb'+(selected.p.note?' · '+selected.p.note:'')}else selectedWeightDate=null;}
+ if(!selectedWeightDate)$('weightPointInfo').textContent='Tap any point on the chart to see that weigh-in’s date and weight.';
+}
+function selectNearestWeightPoint(clientX,clientY){
+ const c=$('weightChart'),rect=c.getBoundingClientRect();if(!chartPointLocations.length)return;
+ const x=clientX-rect.left,y=clientY-rect.top;let best=-1,bestDist=Infinity;
+ chartPointLocations.forEach((p,i)=>{const d=Math.hypot(p.x-x,p.y-y);if(d<bestDist){bestDist=d;best=i}});
+ if(best>=0&&bestDist<=30)showWeightPoint(best);
+}
+$('weightChart').addEventListener('pointerdown',e=>{e.preventDefault();selectNearestWeightPoint(e.clientX,e.clientY)});
+$('weightChart').addEventListener('keydown',e=>{if(!chartPointLocations.length)return;let current=chartPointLocations.findIndex(p=>p.p.date===selectedWeightDate);if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();current=current<0?(e.key==='ArrowRight'?0:chartPointLocations.length-1):Math.max(0,Math.min(chartPointLocations.length-1,current+(e.key==='ArrowRight'?1:-1)));showWeightPoint(current)}});
+
 function addLog(name,points,meal,extra={},date=today()){const targetDate=date||today();data.logs.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random()),date:targetDate,name,points:n(points),meal:meal||'Other',...(targetDate>today()?{planned:true}:{}),...extra});save();draw()}
 const tabButtons=[...document.querySelectorAll('[data-tab]')];
 tabButtons.forEach(b=>b.addEventListener('click',()=>{
@@ -741,7 +791,7 @@ document.querySelectorAll('input[type="search"]').forEach(input=>{
 
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js?v=30', { updateViaCache: 'none' }).catch(err => console.warn('Offline setup could not be enabled:', err));
+    navigator.serviceWorker.register('./sw.js?v=31', { updateViaCache: 'none' }).catch(err => console.warn('Offline setup could not be enabled:', err));
   });
 }
 </script>
